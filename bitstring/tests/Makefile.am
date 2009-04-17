@@ -1,11 +1,13 @@
 INCLUDES = -I$(top_builddir)/src 
 check_PROGRAMS = test_bitstring 
 check_SCRIPTS = test_bitstring.sh 
-TESTS = $(check_PROGRAMS)
+TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
+
+EXTRA_DIST = 
+EXTRA_DIST += test_bitstring.sh
+EXTRA_DIST += test_bitstring.lua
 
 test_bitstring_SOURCES = test_bitstring.c
-
 test_bitstring_LDADD = -lbitstring
-
 test_bitstring_LDFLAGS = -L$(top_builddir)/src/bitstring/
 

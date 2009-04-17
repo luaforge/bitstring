@@ -556,8 +556,6 @@ static void unpack_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, U
         elem->size = (state->source_end - state->source) - state->current_bit / CHAR_BIT;
     }
 
-    printf("elem->size %d, state->source_bits / CHAR_BIT %d\n", elem->size , state->source_bits / CHAR_BIT);
-
     if(elem->size > state->source_bits / CHAR_BIT)
     {
         luaL_error(l, "size error: requested length for element %d is greater then remaining part of input", arg_index);
