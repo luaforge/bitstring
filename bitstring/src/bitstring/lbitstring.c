@@ -173,7 +173,7 @@ typedef void (*ELEM_HANDLER)(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_in
  * name
  *      bits_to_bytes
  *
- * synopsis
+ * description
  *      calculate the number of bytes for given number of bits
  *
  * parameters
@@ -191,7 +191,7 @@ size_t bits_to_bytes(size_t count_bits)
  * name
  *      change_endianess
  *
- * synopsis
+ * description
  *      change endianess of input and return as array of bytes
  *
  * parameters
@@ -259,7 +259,7 @@ static size_t change_endianess(
  * name
  *      clear_unused_bits
  *
- * synopsis
+ * description
  *      clear unused bits in input value
  *
  * paramenters
@@ -283,7 +283,7 @@ static lua_Integer clear_unused_bits(lua_Integer value, size_t used_bits)
  * name
  *      pack_int
  *
- * synopsis
+ * description
  *      pack integer into result buffer
  *
  * paramenters
@@ -448,7 +448,7 @@ static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value,
  * name
  *      pack_bin
  *
- * synopsis
+ * description
  *      pack binary into result buffer
  *
  * paramenters
@@ -487,7 +487,7 @@ static void pack_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, const unsigned cha
  * name
  *      pack_elem
  *
- * synopsis
+ * description
  *      pack element into result buffer
  *
  * paramenters
@@ -552,7 +552,7 @@ static void pack_elem(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, vo
  * name
  *      toint
  *
- * synopsis
+ * description
  *      convert array of bytes to int taking into account the endianess
  *      of the array
  *
@@ -619,7 +619,7 @@ static lua_Integer toint(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index,
  * name
  *      unpack_int_no_push 
  *
- * synopsis
+ * description
  *      unpack integer from input buffer without pushing it onto lua
  *      stack
  *
@@ -732,7 +732,7 @@ static lua_Integer unpack_int_no_push(lua_State *l, ELEMENT_DESCRIPTION *elem, i
  * name
  *      unpack_int
  *
- * synopsis
+ * description
  *      unpack integer from input buffer and push it onto lua stack. 
  *      update the number of return values
  *
@@ -743,7 +743,6 @@ static lua_Integer unpack_int_no_push(lua_State *l, ELEMENT_DESCRIPTION *elem, i
  *      state - unpack state passed between invocations
  *
  */
-
 static void unpack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, UNPACK_STATE *state)
 {
     lua_Integer result = unpack_int_no_push(l, elem, arg_index, state);
@@ -751,13 +750,38 @@ static void unpack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, U
     lua_pushinteger(l, result);
 }
 
+/*
+ * name
+ *      unpack_bin
+ *
+ * description
+ *      unpack binary string from input buffer and push it onto lua stack. 
+ *      update the number of return values
+ *
+ * paramenters
+ *      l - lua state
+ *      elem - element description
+ *      arg_index - number of element in format string. starts from 1 
+ *      state - unpack state passed between invocations
+ *
+ * throws
+ *      wrong format - using rest length specifier for incomplete bytes
+ *      size error - requested length is greater then remaining part of input
+ *
+ * rationale
+ *      the function unpacks stream of bytes as array of integers 
+ *      packed at arbitrary bit positions.
+ *
+ * future work
+ *      optimize for most common usage pattern
+ */
 static void unpack_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, UNPACK_STATE *state)
 {
     if(elem->size == REST)
     {
         if(state->current_bit % CHAR_BIT != 0)
         {
-            luaL_error(l, "wrong format: using rest length specifier for incomplete octets at element %d", arg_index);
+            luaL_error(l, "wrong format: using rest length specifier for incomplete bytes at element %d", arg_index);
         }
 
         elem->size = (state->source_end - state->source) - state->current_bit / CHAR_BIT;
@@ -792,6 +816,25 @@ static void unpack_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, U
     luaL_pushresult(&b);
 }
 
+/*
+ * name
+ *      unpack_elem
+ *
+ * description
+ *      unpack element from input buffer 
+ *
+ * paramenters
+ *      l - lua state
+ *      elem - element description
+ *      arg_index - number of element in format string. starts from 1 
+ *      state - unpack state passed between invocations
+ *
+ * throws
+ *      wrong format - unexpected type
+ *
+ * future work
+ *      add more types
+ */
 static void unpack_elem(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, void *arg)
 {
     UNPACK_STATE *state = (UNPACK_STATE *)arg;
@@ -805,18 +848,23 @@ static void unpack_elem(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, 
     }
     else
     {
-        luaL_error(l, "unexpected type %d", elem->type);
+        luaL_error(l, "wrong format: unexpected type %d", elem->type);
     }
 }
 
-static void throw_wrong_len(lua_State *l, size_t len, size_t max_len)
-{
-    if(len > max_len)
-    {
-        luaL_error(l, "token len longer then %d bytes", max_len);
-    }
-}
-
+/*
+ * name
+ *      compare_token
+ *
+ * description
+ *      compare zero terminated keyword with token that is
+ *      not zero terminated
+ *
+ * paramenters
+ *      keyword - zero terminated keyword
+ *      token - token obtained from parsing the format string
+ *      len - length of the token
+ */
 int compare_token(const char *keyword, const char *token, size_t len)
 {
     if(strlen(keyword) == len && memcmp(keyword, token, len) == 0)
@@ -826,6 +874,18 @@ int compare_token(const char *keyword, const char *token, size_t len)
     return 0;
 }
 
+/*
+ * name
+ *      totype
+ *
+ * description
+ *      convert type token to type enum value
+ *
+ * paramenters
+ *      l - lua state
+ *      token - token obtained from parsing the format string
+ *      token_len - length of the token
+ */
 static ELEMENT_TYPE totype(lua_State *l, const char *token, size_t token_len)
 {
     int i = 1;
@@ -840,6 +900,18 @@ static ELEMENT_TYPE totype(lua_State *l, const char *token, size_t token_len)
     return luaL_error(l, "wrong format: unexpected type token (%s)", token); 
 }
 
+/*
+ * name
+ *      toendianess
+ *
+ * description
+ *      convert endianess token to endianess enum value
+ *
+ * paramenters
+ *      l - lua state
+ *      token - token obtained from parsing the format string
+ *      token_len - length of the token
+ */
 static ELEMENT_ENDIANESS toendianess(lua_State *l, const char *token, size_t token_len)
 {
     int i = 1;
@@ -854,6 +926,18 @@ static ELEMENT_ENDIANESS toendianess(lua_State *l, const char *token, size_t tok
     return luaL_error(l, "wrong format: unexpected endianess token (%s)", token); 
 }
 
+/*
+ * name
+ *      tosize
+ *
+ * description
+ *      convert size token to size value
+ *
+ * paramenters
+ *      l - lua state
+ *      token - token obtained from parsing the format string
+ *      token_len - length of the token
+ */
 static size_t tosize(lua_State *l, const char *token, size_t token_len)
 {
     size_t size = -1;
@@ -873,6 +957,40 @@ static size_t tosize(lua_State *l, const char *token, size_t token_len)
     return size;
 }
 
+/*
+ * name
+ *      parse
+ *
+ * description
+ *      parse format string and call handler function for
+ *      each parsed element. 
+ *      function implemented as a simple state machine
+ *      with following states
+ *          SIZE_STATE - parsing size part of the element
+ *          TYPE_STATE - parsing type part of the element
+ *          ENDIANESS_STATE - parsing optional endianess part of the element
+ *          SPACE_STATE - parsing delimiter between elements
+ *      state transitions are 
+ *      SIZE_STATE -> TYPE_STATE -> ENDIANESS_STATE -> SPACE_STATE -> SIZE_STATE
+ *      SIZE_STATE -> TYPE_STATE -> SPACE_STATE -> SIZE_STATE
+ *      SIZE_STATE -> TYPE_STATE -> ENDIANESS_STATE -> SPACE_STATE -> END
+ *      SIZE_STATE -> TYPE_STATE -> SPACE_STATE -> END
+ *      SIZE_STATE -> TYPE_STATE -> ENDIANESS_STATE -> END
+ *      SIZE_STATE -> TYPE_STATE -> END
+ *
+ * paramenters
+ *      l - lua state
+ *      handler - callback to handle the element
+ *      arg - opaque parameter that is passed to handler between invocations
+ *
+ * rationale
+ *      the function separates parsing logic from logic that moves bits
+ *      both may evolve independently
+ *
+ * future work
+ *      check for performance
+ *      rewrite better - less code, faster
+ */
 static void parse(lua_State *l, ELEM_HANDLER handler, void *arg)
 {
     size_t len = 0;
@@ -928,7 +1046,7 @@ static void parse(lua_State *l, ELEM_HANDLER handler, void *arg)
                 }
                 else if(!isalpha(format[i]))
                 {
-                    luaL_error(l, "not a letter (%c at %d) where letter is expected", 
+                    luaL_error(l, "wrong format: not a letter (%c at %d) where letter is expected", 
                             format[i], i + 1);
                 }
                 else
@@ -950,7 +1068,7 @@ static void parse(lua_State *l, ELEM_HANDLER handler, void *arg)
                 }
                 else if(!isalpha(format[i]))
                 {
-                    luaL_error(l, "not a letter (%c at %d) where letter is expected", 
+                    luaL_error(l, "wrong format: not a letter (%c at %d) where letter is expected", 
                             format[i], i + 1);
                 }
                 else
@@ -973,7 +1091,7 @@ static void parse(lua_State *l, ELEM_HANDLER handler, void *arg)
                 break;
 
             default:
-                luaL_error(l, "unexpected state (%02x at %d)", format[i], i + 1);
+                luaL_error(l, "wrong format: unexpected state (%02x at %d)", format[i], i + 1);
                 break;
         }
         ++i;
@@ -1007,6 +1125,20 @@ static void parse(lua_State *l, ELEM_HANDLER handler, void *arg)
     }
 }
 
+/*
+ * name
+ *      l_pack
+ *
+ * description
+ *      lua_CFunction for packing
+ *
+ * paramenters
+ *      l - lua state
+ *
+ * returns
+ *      pushes the result string onto lua stack and
+ *      returns 1
+ */
 static int l_pack(lua_State *l)
 {
     luaL_Buffer b; 
@@ -1025,13 +1157,21 @@ static int l_pack(lua_State *l)
     return 1;
 }
 
+/*
+ * name
+ *      l_unpack
+ *
+ * description
+ *      lua_CFunction for unpacking
+ *
+ * paramenters
+ *      l - lua state
+ *
+ * returns
+ *      number of return values
+ */
 static int l_unpack(lua_State *l)
 {
-    /*
-     * check two and only two paramenters
-     * count bits in input string
-     */
-
     size_t source_len = 0;
     const unsigned char *source = luaL_checklstring(l, 2, &source_len); 
     UNPACK_STATE state;
@@ -1051,6 +1191,20 @@ static const struct luaL_reg bitstring [] =
     {NULL, NULL}  /* sentinel */
 };
 
+/*
+ * name
+ *      luaopen_bitstring
+ *
+ * description
+ *      the only function that is exported by the library.
+ *      registers lua_CFunctions implemented in the library
+ *
+ * paramenters
+ *      l - lua state
+ *
+ * returns
+ *      number of return values
+ */
 int luaopen_bitstring(lua_State *l) 
 {
     luaL_openlib(l, "bitstring", bitstring, 0);
