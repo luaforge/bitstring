@@ -200,6 +200,12 @@ local test15 = function()
             bitstring.unpack("33:int:little", "\1\2\3\4\5") 
         end,
         "size error")
+    
+    assert_throw(
+        function() 
+            bitstring.unpack("17:int:little", "\1\2\3\4") 
+        end,
+        "wrong format")
 end
 
 local test16 = function()

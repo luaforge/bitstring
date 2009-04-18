@@ -173,6 +173,9 @@ typedef void (*ELEM_HANDLER)(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_in
  * name
  *      bits_to_bytes
  *
+ * synopsis
+ *      calculate the number of bytes for given number of bits
+ *
  * parameters
  *      count_bits - number of bits
  *
@@ -187,6 +190,9 @@ size_t bits_to_bytes(size_t count_bits)
 /*
  * name
  *      change_endianess
+ *
+ * synopsis
+ *      change endianess of input and return as array of bytes
  *
  * parameters
  *      l - lua interpreter state
@@ -249,6 +255,20 @@ static size_t change_endianess(
     return count_bytes;
 }
 
+/*
+ * name
+ *      clear_unused_bits
+ *
+ * synopsis
+ *      clear unused bits in input value
+ *
+ * paramenters
+ *      value - input from which unused bits will be cleared
+ *      used_bits - number of bits that are in use
+ *
+ * returns
+ *      the input value with all unused bits set to zero
+ */
 static lua_Integer clear_unused_bits(lua_Integer value, size_t used_bits)
 {
     if(used_bits >= sizeof(value) * CHAR_BIT)
@@ -259,16 +279,34 @@ static lua_Integer clear_unused_bits(lua_Integer value, size_t used_bits)
     return value & mask;
 }
 
+/*
+ * name
+ *      pack_int
+ *
+ * synopsis
+ *      pack integer into result buffer
+ *
+ * paramenters
+ *      l - lua state
+ *      elem - element description
+ *      value - value to pack
+ *      state - pack state and intermediate results that are passed between
+ *              invocations
+ *
+ * returns
+ *      the function collects the result in buffer member of state parameter
+ *
+ * rationale
+ *      The function splits handling into different cases of bit alignment in
+ *      input and in result buffer. see comments in the body of the function
+ */
 static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value, PACK_STATE *state)
 {
-    /*
-    printf("pack_int: value = 0x%08x, size = %d, endianess = %s\n",
-            value, elem->size, ENDIANESSES[elem->endianess]);
-    */
-
     size_t count_packed_bits = elem->size;
     unsigned char val_buff[sizeof(lua_Integer) + 1];
+    /* start clean */
     memset(val_buff, 0, sizeof(val_buff));
+    /* change the endianess and explicitely represent the value as buffer of bytes */
     size_t count_bytes = 
         change_endianess(
                           l, 
@@ -277,16 +315,24 @@ static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value,
                           val_buff, 
                           sizeof(val_buff));
 
+    /* number of least significant bits in the result buffer that are over byte bounds */
     size_t bit_offset = state->current_bit % CHAR_BIT;
+    /* number of most significant bits in the input value that are over byte bounds */
     size_t source_bit_offset = elem->size % CHAR_BIT;
     /* bit_gap can be CHAR_BIT */
+    /* if bit_offset would be assigned to a byte and ORed with source_bit_offset */
+    /* there would be some bits inside the byte that wouldn't be set, or would overlap */
+    /* or it would be a perfect match. this is the bit_gap */
     int bit_gap = ((int)CHAR_BIT - (int)bit_offset - (int)source_bit_offset) % CHAR_BIT; 
+
+    /* current byte in the result buffer */
     unsigned char *current_byte = state->prep_buffer + state->current_bit / CHAR_BIT;
 
-    /* flash buffer */
+    /* whenever the temporary prep_buffer is full flush it into result buffer */
     if(state->current_bit + elem->size > state->result_bits)
     {
         size_t size = current_byte - state->prep_buffer;
+        /* save the unfinished byte for next prep_buffer */
         unsigned char tmp = *current_byte;
         luaL_addsize(state->buffer, size);
 
@@ -309,7 +355,13 @@ static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value,
     }
     else if(bit_offset == 0 && source_bit_offset != 0)
     {
-        /* move left */
+        /* result string u - used bits*/
+        /* uuuu uuuu  uuuu uuuu  uuuu uuuu  0000 0000  0000 0000 */
+        /* input value in a char buffer */
+        /* 0000 0uuu uuuu uuuu */ 
+        /* moved left and ORed with result buffer */
+        /* uuuu uuuu uuu0 0000 */ 
+         
         int i;
         for(i = 0; i < count_bytes - 1; ++i)
         {
@@ -318,11 +370,16 @@ static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value,
             ++current_byte;
         }
         *current_byte = (val_buff[i] << (CHAR_BIT - source_bit_offset)) & 0xff;
-     }
+    }
     else if(bit_offset != 0 && source_bit_offset == 0)
     {
-        /* move right */
-        int i;
+        /* result string u - used bits*/
+        /* uuuu uuuu  uuuu uuuu  uuuu uuuu  uuu0 0000  0000 0000 */
+        /* input value in a char buffer */
+        /* uuuu uuuu  uuuu uuuu */ 
+        /* moved right and ORed with result buffer */
+        /* 000u uuuu uuuu  uuuu uuu0 0000 */ 
+         int i;
         unsigned char tmp = 0;
         for(i = 0; i < count_bytes; ++i)
         {
@@ -336,6 +393,11 @@ static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value,
     {
         if(bit_gap < 0)
         {
+            /* result string u - used bits*/
+            /* uuuu uuuu  uuuu uuuu  uuuu uuuu  uuu0 0000  0000 0000 */
+            /* input value in a char buffer */
+            /* 0uuu uuuu  uuuu uuuu */ 
+
             bit_gap = abs(bit_gap);
             /* move right */
             int i;
@@ -350,7 +412,11 @@ static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value,
         }
         else if(bit_gap > 0)
         {
-            /* move left */
+            /* result string u - used bits*/
+            /* uuuu uuuu  uuuu uuuu  uuuu uuuu  uuu0 0000  0000 0000 */
+            /* input value in a char buffer */
+            /* 0000 uuuu  uuuu uuuu */ 
+
             int i;
             for(i = 0; i < count_bytes - 1; ++i)
             {
@@ -362,6 +428,11 @@ static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value,
         }
         else
         {
+            /* result string u - used bits*/
+            /* uuuu uuuu  uuuu uuuu  uuuu uuuu  uuu0 0000  0000 0000 */
+            /* input value in a char buffer */
+            /* 000u uuuu  uuuu uuuu */ 
+
             int i;
             for(i = 0; i < count_bytes; ++i)
             {
@@ -370,11 +441,35 @@ static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value,
             }
         }
     }
-
-
     state->current_bit += count_packed_bits;
 }
 
+/*
+ * name
+ *      pack_bin
+ *
+ * synopsis
+ *      pack binary into result buffer
+ *
+ * paramenters
+ *      l - lua state
+ *      elem - element description
+ *      bin - input binary string
+ *      len - input length
+ *      state - pack state and intermediate results that are passed between
+ *              invocations
+ *
+ * returns
+ *      the function collects the result in buffer member of state parameter
+ *
+ * rationale
+ *      The function handles the binary string as sequence of integers
+ *      to allow packing strings of arbitrary length on arbitrary bit
+ *      positions.
+ *
+ * future work
+ *      optimize with memcpy for the most common usage pattern
+ */
 static void pack_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, const unsigned char *bin, size_t len, PACK_STATE *state)
 {
     size_t i;
@@ -388,13 +483,34 @@ static void pack_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, const unsigned cha
     }
 }
 
+/*
+ * name
+ *      pack_elem
+ *
+ * synopsis
+ *      pack element into result buffer
+ *
+ * paramenters
+ *      l - lua state
+ *      elem - element description
+ *      arg_index - number of element in format string. starts from 1 
+ *      arg - pack state and intermediate results that are passed between
+ *              invocations
+ *
+ * returns
+ *      the function collects the result in buffer member of state parameter
+ *
+ * throws
+ *      size error - element size is zero
+ *      size error - element size exceeds lua_Integer size
+ *      size error - element size exceeds input size for binary strings
+ *      wrong format - unknown input type
+ *
+ * future work
+ *      add more types - floating point, tables, etc
+ */
 static void pack_elem(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, void *arg)
 {
-    /*
-    printf("pack_elem: %d:%s:%s at %d\n", 
-    elem->size, TYPES[elem->type], ENDIANESSES[elem->endianess], arg_index);
-    */
-
     if(elem->size == 0)
     {
         luaL_error(l, "size error: argument %d", arg_index);
@@ -432,11 +548,45 @@ static void pack_elem(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, vo
     }
 }
 
+/*
+ * name
+ *      toint
+ *
+ * synopsis
+ *      convert array of bytes to int taking into account the endianess
+ *      of the array
+ *
+ * paramenters
+ *      l - lua state
+ *      elem - element description
+ *      arg_index - number of element in format string. starts from 1 
+ *      buffer - the buffer to convert
+ *      buffer_len - length of input buffer
+ *
+ * returns
+ *      the integer in host byte order
+ *
+ * throws
+ *      wrong format - little endianess requested for size % CHAR_BIT != 0
+ *      size error - element size is zero
+ *      size error - element size exceeds lua_Integer size
+ *      size error - element size exceeds input size for binary strings
+ *      wrong format - unknown input type
+ *
+ * rationale
+ *      this function was implemented rather then just casting to int and moving bits
+ *      to allow handling of integers packed on arbitrary bit bounds
+ *      for example 32 bit integer may require 5 bytes
+ *      0000 uuuu  uuuu uuuu  uuuu uuuu  uuuu uuuu  uuuu 0000   
+ *
+ * future work
+ *      optimize for most common usage pattern
+ */
 static lua_Integer toint(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, const unsigned char *buffer, size_t buffer_len)
 {
     if(elem->size % CHAR_BIT != 0 && elem->endianess == EE_LITTLE)
     {
-        luaL_error(l, "argument %d: little endianess supported for %d bit bounds", arg_index, CHAR_BIT);
+        luaL_error(l, "wrong format: argument %d: little endianess supported for %d bit bounds only", arg_index, CHAR_BIT);
     }
 
     lua_Integer result = 0;
@@ -460,16 +610,42 @@ static lua_Integer toint(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index,
     }
     else
     {
-        luaL_error(l, "unsupported endianess %d", elem->endianess);
+        luaL_error(l, "wrong format: unsupported endianess %d", elem->endianess);
     }
     return result;
 }
 
+/*
+ * name
+ *      unpack_int_no_push 
+ *
+ * synopsis
+ *      unpack integer from input buffer without pushing it onto lua
+ *      stack
+ *
+ * paramenters
+ *      l - lua state
+ *      elem - element description
+ *      arg_index - number of element in format string. starts from 1 
+ *      state - unpack state passed between invocations
+ *
+ * returns
+ *      the unpacked integer in host byte order
+ *
+ * throws
+ *      size error - element size exceeds the size of input reminder
+ *      size error - element size exceeds the size of lua_Integer
+ *      size error - element size is zero
+ *
+ * rationale
+ *      handling different usage patterns separately provides opportunities
+ *      for optimization
+ *
+ * future work
+ *      optimize for most common usage pattern
+ */
 static lua_Integer unpack_int_no_push(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, UNPACK_STATE *state)
 {
-    /*
-     * printf("unpack_int: %d:%s:%s\n", elem->size, TYPES[elem->type], ENDIANESSES[elem->endianess]);
-     */
     /*
      * check space
      */
@@ -491,19 +667,33 @@ static lua_Integer unpack_int_no_push(lua_State *l, ELEMENT_DESCRIPTION *elem, i
     }
 
 
+    /* number of most significant unprossed bits in the input buffer that are over byte bounds */
     size_t bit_offset = state->current_bit % CHAR_BIT;
+    /* number of most significant bits in the result value that are over byte bounds */
     size_t result_bit_offset = elem->size % CHAR_BIT;
+    /* current byte in the input buffer */
     const unsigned char *current_byte = state->source + state->current_bit / CHAR_BIT;
 
     lua_Integer result = 0xdeadbeef;
 
     if(bit_offset == 0 && result_bit_offset == 0)
     {
+        /* input buffer p - processed bits, u - unprocessed bits*/
+        /* pppp pppp  pppp pppp uuuu uuuu uuuu uuuu */
         size_t bytes_to_copy = elem->size / CHAR_BIT;
         unsigned char result_buffer[bytes_to_copy];
         memcpy(result_buffer, current_byte, bytes_to_copy);
         result = toint(l, elem, arg_index, result_buffer, sizeof(result_buffer)); 
     }
+    /*
+     * check optimization opportunities
+    else if(bit_offset != 0 && result_bit_offset == 0)
+    {
+    }
+    else if(bit_offset == 0 && result_bit_offset != 0)
+    {
+    }
+    */
     else
     {
         /* check for source end */
@@ -514,6 +704,7 @@ static lua_Integer unpack_int_no_push(lua_State *l, ELEMENT_DESCRIPTION *elem, i
         unsigned char result_buffer[bytes_to_copy];
         memset(result_buffer, 0, bytes_to_copy);
 
+        /* copy bits to result_buffer while adjusting on byte bounds */
         size_t right_shift = CHAR_BIT - end_bit % CHAR_BIT;
         size_t left_shift = CHAR_BIT - right_shift;
         int i;
@@ -525,6 +716,7 @@ static lua_Integer unpack_int_no_push(lua_State *l, ELEMENT_DESCRIPTION *elem, i
         }
         if(i >= 0)
         {
+            /* there are still some bits to copy from end_byte */
             result_buffer[0] |= (*end_byte >> right_shift) & 0xff; 
         }
 
@@ -533,9 +725,24 @@ static lua_Integer unpack_int_no_push(lua_State *l, ELEMENT_DESCRIPTION *elem, i
     }
     state->current_bit += elem->size;
     state->source_bits -= elem->size;
-
     return result;
 }
+
+/*
+ * name
+ *      unpack_int
+ *
+ * synopsis
+ *      unpack integer from input buffer and push it onto lua stack. 
+ *      update the number of return values
+ *
+ * paramenters
+ *      l - lua state
+ *      elem - element description
+ *      arg_index - number of element in format string. starts from 1 
+ *      state - unpack state passed between invocations
+ *
+ */
 
 static void unpack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, UNPACK_STATE *state)
 {
