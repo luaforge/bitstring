@@ -1,98 +1,31 @@
 require "os"
 require "bitstring"
-
-local disable_print = function()
-    io.output("/dev/null")
-end
-
-local my_print = function(...)
-    for i, v in ipairs(arg) do
-        io.write(tostring(v))
-        io.write(" ")
-    end
-    io.write("\n")
-end
-
-local run_test = function(name, f)
-    my_print(string.rep("-", 32))
-    my_print("started "..name)
-    my_print(string.rep("-", 32))
-    f()
-    my_print(string.rep("-", 32))
-    my_print("ended "..name)
-    my_print(string.rep("-", 32))
-end
-
-local hexdump = function (x)
-    if type(x) == "number" then
-        io.write(string.format("%08x\n", x))
-    else
-        hex = ''
-        for b in string.gfind(x, ".") do
-            io.write(string.format("%02x ", string.byte(b)))
-        end
-        io.write("\n")
-    end
-end
-
-
-local assert_throw = function(f, message)
-    result, e = pcall(f)
-    if (result ~= true) and (string.find(e, message, 1, true) ~= nil) then 
-        my_print("expected error", e, " was thrown")
-        return true;
-    else
-        error((message or "expected error").." not thrown")
-    end
-end
-
-
-local assert_equal = function(result, expected)
-    my_print("expected")
-    hexdump(expected)
-    my_print("result")
-    hexdump(result)
-    assert(result == expected)
- end
-
-local assert_tables_equal = function(result, expected)
-    for k, v in ipairs(result) do
-        assert_equal(result[k], expected[k])
-    end
-end
-
-local run_pack_unpack_test = function(format, packed_values, expected_result)
-    local result = bitstring.pack(format, unpack(packed_values)) 
-    assert_equal(result, expected_result)
-    local unpack_format = string.gsub(format, "all:bin", "rest:bin")
-    local unpacked_values = {bitstring.unpack(unpack_format, result)}
-    assert_tables_equal(unpacked_values, packed_values)
-end
+require "test_helpers"
 
 local test1 = function()
-    assert_throw(function() bitstring.pack() end, "bad argument #1 to 'pack' (string expected, got no value)")
-    assert_throw(function() bitstring.unpack("8:bin") end, "bad argument #2 to 'unpack' (string expected, got no value)")
+    test_helpers.assert_throw(function() bitstring.pack() end, "bad argument #1 to 'pack' (string expected, got no value)")
+    test_helpers.assert_throw(function() bitstring.unpack("8:bin") end, "bad argument #2 to 'unpack' (string expected, got no value)")
 end
 
 local test2 = function()
     local expected = "\1\2\1\4\3\2\1hello"
     local packed_values = {0x1, 0x0102, 0x01020304, "hello"}
     local format = "8:int:little, 16:int:little, 32:int:little, 5:bin"
-    run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, packed_values, expected)
 end
 
 local test3 = function()
     local expected = "\1"
     local packed_values = {0x01}
     local format = "8:int"
-    run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, packed_values, expected)
 end
 
 local test4 = function()
     local expected = "\1\1\2\1\2\3\4hello"
     local packed_values = {0x1, 0x0102, 0x01020304, "hello"}
     local format = "8:int, 16:int:big, 32:int:big, 5:bin"
-    run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, packed_values, expected)
 end
 
 local test5 = function()
@@ -101,7 +34,7 @@ local test5 = function()
     local packed_values = {}
     local format = string.rep("1:int,", 16)
     for i = 1, 16, 1 do packed_values[i] = 1 end
-    run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, packed_values, expected)
 end
 
 
@@ -109,21 +42,21 @@ local test6 = function()
     local expected = "\240\16\16\32\16\32\48\79"
     local packed_values = {0x0f, 0x1, 0x0102, 0x01020304, 0x0f}
     local format = "4:int, 8:int, 16:int:big, 32:int:big, 4:int"
-    run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, packed_values, expected)
 end
 
 local test7 = function()
     local expected = "\255\255"
     local packed_values = {0x01, 0xff, 0x7f}
     local format = "1:int, 8:int, 7:int"
-    run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, packed_values, expected)
 end
 
 local test8 = function()
     local expected = "\255\255"
     local packed_values = {0x07, 0x3f, 0x7f}
     local format = "3:int, 6:int, 7:int"
-    run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, packed_values, expected)
 end
 
 local test9 = function()
@@ -131,28 +64,28 @@ local test9 = function()
     local expected = string.rep("\255", LUAL_BUFFERSIZE + 1)
     local packed_values = {0x07, string.rep("\255", LUAL_BUFFERSIZE), 0x1f}
     local format = "3:int, "..LUAL_BUFFERSIZE..":bin, 5:int"
-    run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, packed_values, expected)
 end
 
 local test10 = function()
     local expected = "\160"
     local packed_values = {0x01, 0x0, 0x01, 0x0}
     local format = "1:int, 1:int, 1:int, 5:int"
-    run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, packed_values, expected)
 end
 
 local test11 = function()
     local expected = "\170\170"
     local packed_values = {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0}
     local format = string.rep("1:int, ", 16)
-    run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, packed_values, expected)
 end
 
 local test12 = function()
     local expected = "\1\2\1\4\3\2\1hello"
     local packed_values = {0x01, 0x0102, 0x01020304, "hello"}
     local format = "8:int:little, 16:int:little, 32:int:little, all:bin"
-    run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, packed_values, expected)
 end
 
 local test13 = function()
@@ -160,21 +93,21 @@ local test13 = function()
     local packed_values = {0x01, 0x0102, 0x01020304, "hello"}
     local format = "8:int:little, 16:int:little, 32:int:little, 4:bin"
     local result = bitstring.pack(format, unpack(packed_values))
-    assert_equal(result, expected)
+    test_helpers.assert_equal(result, expected)
     local unpacked_values = {bitstring.unpack(format, result)}
     packed_values[4] = "hell"
-    assert_tables_equal(packed_values, unpacked_values)
+    test_helpers.assert_tables_equal(packed_values, unpacked_values)
 end
 
 local test14 = function()
-    assert_throw(
+    test_helpers.assert_throw(
         function() 
             bitstring.pack("8:int:little, 16:int:little, 32:int:little, 6:bin", 
                 0x1, 0x0102, 0x01020304, "hello")
         end,
         "size error")
 
-    assert_throw(
+    test_helpers.assert_throw(
         function()
             bitstring.unpack("8:bin", "hello")
         end,
@@ -182,26 +115,26 @@ local test14 = function()
 end
 
 local test15 = function()
-    assert_throw(
+    test_helpers.assert_throw(
         function() 
             bitstring.pack("8:int:little, 16:int:little, 33:int:little, all:bin", 
                 0x1, 0x0102, 0x01020304, "hello")
         end,
         "size error")
 
-    assert_throw(
+    test_helpers.assert_throw(
         function() 
             bitstring.unpack("33:int:little", "\1\2\3\4") 
         end,
         "size error")
 
-    assert_throw(
+    test_helpers.assert_throw(
         function() 
             bitstring.unpack("33:int:little", "\1\2\3\4\5") 
         end,
         "size error")
     
-    assert_throw(
+    test_helpers.assert_throw(
         function() 
             bitstring.unpack("17:int:little", "\1\2\3\4") 
         end,
@@ -209,14 +142,14 @@ local test15 = function()
 end
 
 local test16 = function()
-    assert_throw(
+    test_helpers.assert_throw(
         function() 
             bitstring.pack("8:int:little, 0:int:little, 32:int:little, all:bin", 
                 0x1, 0x0102, 0x01020304, "hello")
         end,
         "size error")
 
-    assert_throw(
+    test_helpers.assert_throw(
         function() 
             bitstring.pack("0:int:little", "hello")
         end,
@@ -227,30 +160,30 @@ local test17 = function()
     local expected = "\1\2\1\4\3\2\1hello"
     local packed_values = {0x01, 0x0102, 0x01020304, "hello"}
     local format = "8:int:little, 16:int:little, 32:int:little, all:bin "
-    run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, packed_values, expected)
 end
 
 local test18 = function()
     local expected = "\1\2\1\4\3\2\1"
     local packed_values = {0x1, 0x0102, 0x01020304, "hello"}
     local format = "8:int:little, 16:int:little, 32:int:little,     "
-    run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, packed_values, expected)
 end
 
 local test19 = function()
-    assert_throw(
+    test_helpers.assert_throw(
         function() 
             bitstring.pack(":int:little, 16:int:little", 0x1, 0x0102)
         end,
         "wrong format")
 
-    assert_throw(
+    test_helpers.assert_throw(
         function() 
             bitstring.pack("8:int:little, 16:int:littl", 0x1, 0x0102)
         end,
         "wrong format")
 
-    assert_throw(
+    test_helpers.assert_throw(
         function() 
             bitstring.pack("8:in:little, 16:int:little", 0x1, 0x0102)
         end,
@@ -266,10 +199,10 @@ local test21 = function()
     local packed_values = {0xff, 0xff, 0xff}
     local format = "1:int, 8:int, 7:int"
     local result = bitstring.pack(format, unpack(packed_values))
-    assert_equal(result, expected)
+    test_helpers.assert_equal(result, expected)
     local unpacked_values = {bitstring.unpack(format, expected)}
     local expected_values = {0x01, 0xff, 0x7f}
-    assert_tables_equal(unpacked_values, expected_values)
+    test_helpers.assert_tables_equal(unpacked_values, expected_values)
 end
 
 local hex_to_bin = function(hexstream)
@@ -296,7 +229,7 @@ local peap_example = function()
         8:int, 16:int, 8:int, rest:bin]], peap_message)
     assert(code == EAP_REQUEST)
     assert(eap_type == EAP_TYPE_PEAP)
-    my_print("received peap message")
+    test_helpers.my_print("received peap message")
 
     local length_bit, more_bit, start_bit, reserved_bits, version, rest = 
         bitstring.unpack("1:int, 1:int, 1:int, 3:int, 2:int, rest:bin", rest)
@@ -307,19 +240,19 @@ local peap_example = function()
     end
 
     if peap_length ~= nil then
-        my_print("total peap message length: ", peap_length)
+        test_helpers.my_print("total peap message length: ", peap_length)
     end
 
     if more_bit == 1 then
-        my_print("more fragments will follow, current fragment length: ", #rest)
+        test_helpers.my_print("more fragments will follow, current fragment length: ", #rest)
     end
 
     if version == 0 then
-        my_print("this is microsoft protocol version")
+        test_helpers.my_print("this is microsoft protocol version")
     elseif version == 1 then
-        my_print("this is cisco protocol version")
+        test_helpers.my_print("this is cisco protocol version")
     else
-        my_print("error: unknown version")
+        test_helpers.my_print("error: unknown version")
     end
 end
 
@@ -339,28 +272,28 @@ end
 
 local run_tests = function()
     --disable_print()
-    run_test("test21", test21)
-    run_test("test20", test20)
-    run_test("test19", test19)
-    run_test("test18", test18)
-    run_test("test17", test17)
-    run_test("test16", test16)
-    run_test("test15", test15)
-    run_test("test14", test14)
-    run_test("test13", test13)
-    run_test("test12", test12)
-    run_test("test11", test11)
-    run_test("test10", test10)
-    run_test("test9", test9)
-    run_test("test8", test8)
-    run_test("test7", test7)
-    run_test("test6", test6)
-    run_test("test5", test5)
-    run_test("test4", test4)
-    run_test("test3", test3)
-    run_test("test2", test2)
-    run_test("test1", test1)
-    run_test("peap_example", peap_example)
+    test_helpers.run_test("test21", test21)
+    test_helpers.run_test("test20", test20)
+    test_helpers.run_test("test19", test19)
+    test_helpers.run_test("test18", test18)
+    test_helpers.run_test("test17", test17)
+    test_helpers.run_test("test16", test16)
+    test_helpers.run_test("test15", test15)
+    test_helpers.run_test("test14", test14)
+    test_helpers.run_test("test13", test13)
+    test_helpers.run_test("test12", test12)
+    test_helpers.run_test("test11", test11)
+    test_helpers.run_test("test10", test10)
+    test_helpers.run_test("test9", test9)
+    test_helpers.run_test("test8", test8)
+    test_helpers.run_test("test7", test7)
+    test_helpers.run_test("test6", test6)
+    test_helpers.run_test("test5", test5)
+    test_helpers.run_test("test4", test4)
+    test_helpers.run_test("test3", test3)
+    test_helpers.run_test("test2", test2)
+    test_helpers.run_test("test1", test1)
+    test_helpers.run_test("peap_example", peap_example)
     os.exit(0)
 end
 

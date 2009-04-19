@@ -337,7 +337,6 @@ static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value,
         luaL_addsize(state->buffer, size);
 
         state->prep_buffer = luaL_prepbuffer(state->buffer);
-        memset(state->prep_buffer, 0, LUAL_BUFFERSIZE);
         state->current_bit = bit_offset;
         current_byte = state->prep_buffer;
         *current_byte = tmp;
@@ -351,6 +350,7 @@ static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value,
         {
             *current_byte = val_buff[i];
             ++current_byte;
+            *current_byte = 0;
         }
     }
     else if(bit_offset == 0 && source_bit_offset != 0)
@@ -368,6 +368,7 @@ static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value,
             *current_byte = (val_buff[i] << (CHAR_BIT - source_bit_offset)) & 0xff;
             *current_byte |= (val_buff[i + 1] >> source_bit_offset) & 0xff;
             ++current_byte;
+            *current_byte = 0;
         }
         *current_byte = (val_buff[i] << (CHAR_BIT - source_bit_offset)) & 0xff;
     }
@@ -386,6 +387,7 @@ static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value,
             *current_byte |= ((val_buff[i] >> bit_offset) | tmp) & 0xff;
             tmp = (val_buff[i] << (CHAR_BIT - bit_offset)) & 0xff; 
             ++current_byte;
+            *current_byte = 0;
         }
         *current_byte |= tmp;
     }
@@ -407,6 +409,7 @@ static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value,
                 *current_byte |= ((val_buff[i] >> bit_gap) | tmp) & 0xff;
                 tmp = (val_buff[i] << (CHAR_BIT - bit_gap)) & 0xff; 
                 ++current_byte;
+                *current_byte = 0;
             }
             *current_byte |= tmp & 0xff; 
         }
@@ -423,6 +426,7 @@ static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value,
                 *current_byte |= (val_buff[i] << bit_gap) & 0xff;
                 *current_byte |= (val_buff[i + 1] >> (CHAR_BIT - bit_gap)) & 0xff;
                 ++current_byte;
+                *current_byte = 0;
             }
             *current_byte |= (val_buff[i] << bit_gap) & 0xff;
         }
@@ -438,6 +442,7 @@ static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value,
             {
                 *current_byte |= val_buff[i];
                 ++current_byte;
+                *current_byte = 0;
             }
         }
     }
@@ -1147,7 +1152,6 @@ static int l_pack(lua_State *l)
     PACK_STATE state;
     state.buffer = &b;
     state.prep_buffer = luaL_prepbuffer(&b);
-    memset(state.prep_buffer, 0, LUAL_BUFFERSIZE);
     state.current_bit = 0;
     state.result_bits = LUAL_BUFFERSIZE * CHAR_BIT;
 
@@ -1184,10 +1188,13 @@ static int l_unpack(lua_State *l)
     return state.return_count;
 }
 
+#include "bitstring/lhexdump.c"
+
 static const struct luaL_reg bitstring [] = 
 {
     {"pack", l_pack},
     {"unpack", l_unpack},
+    {"hexdump", l_hexdump},
     {NULL, NULL}  /* sentinel */
 };
 
