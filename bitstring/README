@@ -1,0 +1,40 @@
+README for bitstring-0.0
+
+The bitstring library provides facilities to create and parse binary strings 
+as arbitrary collection of bits. It is inspired by Erlang bit syntax but is 
+not a copy of it. The goal of bitstring project is to ease implementation and 
+experimentation with binary protocols from Lua - especially protocols based 
+on bits. The bitstring library doesn't need any modification of Lua syntax. 
+It is released under the flexible BSD license. It is freely available from 
+http://luaforge.net/projects/bitstring/
+
+For detailed installation instructions see INSTALL
+
+1. Install
+./configure 
+make check
+sudo make install
+
+to install on non default location use --libdir
+for example 
+./configure --libdir=/usr/local/lib/lua/5.1/ 
+
+2. Usage
+Verify that bitstring is on LUA_CPATH 
+
+> require "bitstring"
+> result = bitstring.pack("1:int, 3:int, 5:int, 16:int:big", 0x01, 0x04, 0xff, 0x0102)
+> a, b, c, d = bitstring.unpack("1:int, 3:int, 5:int, 16:int:big")
+> result = bitstring.hexdump("abcd")
+> result = bitstring.hexstream("abcd")
+> result = bitstring.fromhexstream("000a0b0c")
+> result = bitstring.bindump("abcd")
+> result = bitstring.binstream("abcd")
+> result = bitstring.frombinstream("001001010001001001110010 ")
+
+
+
+
+
+
+

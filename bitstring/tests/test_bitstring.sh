@@ -1,7 +1,9 @@
 #!/bin/sh
 
 rm -f bitstring.so
-ln -s ../src/bitstring/.libs/libbitstring.so bitstring.so
+rm -f libbitstring.so
+ln -s ../src/bitstring/.libs/bitstring.so libbitstring.so
+ln -s ../src/bitstring/.libs/bitstring.so bitstring.so
 
 LUA=lua
 TESTS="test_bitstring \
