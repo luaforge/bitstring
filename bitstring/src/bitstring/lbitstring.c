@@ -35,6 +35,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdint.h>
+#include <errno.h>
 
 /*
  * Element types
@@ -1189,12 +1190,18 @@ static int l_unpack(lua_State *l)
 }
 
 #include "bitstring/lhexdump.c"
+#include "bitstring/lbindump.c"
 
 static const struct luaL_reg bitstring [] = 
 {
     {"pack", l_pack},
     {"unpack", l_unpack},
     {"hexdump", l_hexdump},
+    {"hexstream", l_hexstream},
+    {"fromhexstream", l_fromhexstream},
+    {"bindump", l_bindump},
+    {"binstream", l_binstream},
+    {"frombinstream", l_frombinstream},
     {NULL, NULL}  /* sentinel */
 };
 

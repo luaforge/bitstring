@@ -77,5 +77,7 @@ test_helpers.assert_tables_equal = assert_tables_equal
 test_helpers.assert_throw = assert_throw
 test_helpers.run_pack_unpack_test = run_pack_unpack_test
 test_helpers.my_print = my_print
+test_helpers.disable_print = disable_print
+test_helpers.hexdump = hexdump
 
 
