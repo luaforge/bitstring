@@ -1,26 +1,39 @@
 README for bitstring-0.0
 
+1. Overview
 The bitstring library provides facilities to create and parse binary strings 
 as arbitrary collection of bits. It is inspired by Erlang bit syntax but is 
-not a copy of it. The goal of bitstring project is to ease implementation and 
-experimentation with binary protocols from Lua - especially protocols based 
+not a copy of it. The goal of bitstring project is to ease implementation of
+and experimentation with binary protocols from Lua - especially protocols based 
 on bits. The bitstring library doesn't need any modification of Lua syntax. 
 It is released under the flexible BSD license. It is freely available from 
 http://luaforge.net/projects/bitstring/
 
+2. Related work
+bitlib - small and elegant library for bitwise operations 
+[http://luaforge.net/projects/bitlib]
+
+3. Development Status
+The project is currently in a pre-alpha. The code works but is still 
+not fully optimized. Some changes to the interface are expected to 
+provide for more efficient usage.
+Please submit bugs to http://luaforge.net/projects/bitstring/
+Suggestions are welcome.
+
+4. Installation
 For detailed installation instructions see INSTALL
 
-1. Install
-./configure 
-make check
-sudo make install
+   $ ./configure 
+   $ make check
+   $ sudo make install
 
-to install on non default location use --libdir
+to install to non default location use --libdir
 for example 
-./configure --libdir=/usr/local/lib/lua/5.1/ 
 
-2. Usage
-Verify that bitstring is on LUA_CPATH 
+    $ ./configure --libdir=/usr/local/lib/lua/5.1/ 
+
+5. Library functions
+Verify that bitstring is on LUA_CPATH and 
 
 > require "bitstring"
 > result = bitstring.pack("1:int, 3:int, 5:int, 16:int:big", 0x01, 0x04, 0xff, 0x0102)
@@ -30,11 +43,94 @@ Verify that bitstring is on LUA_CPATH
 > result = bitstring.fromhexstream("000a0b0c")
 > result = bitstring.bindump("abcd")
 > result = bitstring.binstream("abcd")
-> result = bitstring.frombinstream("001001010001001001110010 ")
+> result = bitstring.frombinstream("001001010001001001110010")
 
+6. Examples
+6.1 RADIUS message parser and composer
 
+-- parse-radius.lua 
+-- This example demonstrates parsing and creation of RADIUS protocol messages
+-- using bitstring.pack and bitstring.unpack. It also uses bitstring.hexstream
+-- and bitstring.fromhexstream utility functions that ease on debugging.
+-- RADIUS protocol is defined in RFC 2865.
+-- ---------------------------------------
+require "bitstring"
 
+-- copied from wireshark
+packet = "01e40088abe03a1b2b38bbd7edcf08b26334f417010867696f7261300c06000005781e10303034302e393661302e343931301f10303034302e393662312e653036330606000000015012efbdb1bd5e4fe4147a95a78d001c51844f0d0202000b0167696f7261303d06000000130506000044f504060a383e83200f63642d617031313230622d3031"
 
+radis_message = bitstring.fromhexstream(packet)
 
+-- parse radius message
+code, identifier, message_length, authenticator, attributes = 
+    bitstring.unpack("8:int, 8:int, 16:int:big, 16:bin, rest:bin", radis_message)
 
+attribute_list = {}
+while(#attributes > 0) do
+    number, length, attributes = bitstring.unpack("8:int, 8:int, rest:bin", attributes)
+    value, attributes  = bitstring.unpack((length - 2) .. ":bin, rest:bin", attributes)
+    table.insert(attribute_list, {number = number, length = length, value = value})
+end
+
+-- compose radius message
+attributes = {}
+for i, a in ipairs(attribute_list) do
+    attribute = bitstring.pack("8:int, 8:int, all:bin", a.number, a.length, a.value)
+    table.insert(attributes, attribute)
+end
+attributes = table.concat(attributes)
+
+composed_message_length = 20 + #attributes
+composed_radius_message = bitstring.pack("8:int, 8:int, 16:int:big, 16:bin, all:bin",
+    code, identifier, composed_message_length, authenticator, attributes) 
+
+-- print results
+print("parsed radius message")
+print("code: ", code)
+print("identifier: ", identifier)
+print("radius message length: ", message_length)
+print("authenticator: ", bitstring.hexstream(authenticator))
+print("attributes:")
+
+for i, attribute in ipairs(attribute_list) do
+    print("--------------------------------------")
+    print("   number: ", attribute.number)
+    print("   length: ", attribute.length)
+    print("   value: ", bitstring.hexstream(attribute.value))
+end
+print("--------------------------------------")
+
+print("composed radius message")
+print(bitstring.hexstream(composed_radius_message))
+assert(composed_radius_message == radis_message)
+
+6.2 EAP-TLS message parser and composer
+
+-- parse-eap-tls.lua
+-- This example demonstrates extraction and setting of bits in EAP-TLS message
+-- EAP-TLS protocol defined in RFC 2716
+
+require "bitstring"
+
+packet = "010000060d20"
+
+eap_tls_message = bitstring.fromhexstream(packet)
+
+code, identifier, length, eap_type, L_bit, M_bit, S_bit, R_bits = bitstring.unpack(
+"8:int, 8:int, 16:int:big, 8:int, 1:int, 1:int, 1:int, 5:int", eap_tls_message);
+
+composed_eap_tls_message = bitstring.pack(
+    "8:int, 8:int, 16:int:big, 8:int, 1:int, 1:int, 1:int, 5:int", 
+    code, identifier, length, eap_type, L_bit, M_bit, S_bit, R_bits)
+
+print("code:      ", code)
+print("identifier: ", identifier)
+print("length:    ", length)
+print("eap_type:  ", eap_type)
+print("L_bit:     ", L_bit)
+print("M_bit:     ", M_bit)
+print("S_bit:     ", S_bit)
+print("R_bits:    ", R_bits)
+
+assert(eap_tls_message == composed_eap_tls_message)
 
