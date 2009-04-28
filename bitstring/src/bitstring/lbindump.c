@@ -80,7 +80,7 @@ static const char *BIN_BYTES[256] =
 static int l_bindump(lua_State *l)
 {
     size_t len = 0;
-    const unsigned char *input = luaL_checklstring(l, 1, &len);
+    const unsigned char *input = get_substring(l, &len, 1, 2, 3);
 
     luaL_Buffer b; 
     luaL_buffinit(l, &b);
@@ -129,7 +129,7 @@ static int l_bindump(lua_State *l)
 static int l_binstream(lua_State *l)
 {
     size_t len = 0;
-    const unsigned char *input = luaL_checklstring(l, 1, &len);
+    const unsigned char *input = get_substring(l, &len, 1, 2, 3);
 
     luaL_Buffer b; 
     luaL_buffinit(l, &b);
@@ -154,7 +154,7 @@ static int l_binstream(lua_State *l)
 static int l_frombinstream(lua_State *l)
 {
     size_t len = 0;
-    const unsigned char *input = luaL_checklstring(l, 1, &len);
+    const unsigned char *input = get_substring(l, &len, 1, 2, 3);
 
     luaL_Buffer b; 
     luaL_buffinit(l, &b);

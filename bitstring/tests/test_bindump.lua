@@ -187,11 +187,12 @@ local test8 = function()
 end
 
 local test9 = function()
-    local expected = ""
-    local result = bitstring.binstream("")
-    assert(result == expected)
-    assert(bitstring.frombinstream(result) == "")
-    assert(bitstring.bindump("") == "")
+    -- don't allow empty strings
+    -- local expected = ""
+    -- local result = bitstring.binstream("")
+    -- assert(result == expected)
+    -- assert(bitstring.frombinstream(result) == "")
+    -- assert(bitstring.bindump("") == "")
 end
 
 local run_tests = function()

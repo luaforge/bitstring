@@ -1164,6 +1164,90 @@ static int l_pack(lua_State *l)
 
 /*
  * name
+ *      get_substring
+ *
+ * description
+ *      get substring based on parameters that specify substring in Lua style 
+ *      as C style pointer/length substring
+ *
+ * paramenters
+ *      l - lua state
+ *      len - out parameter for requested length
+ *      string_param - location of string parameter on stack
+ *      start_param - location of start parameter on stack
+ *      end_param - location of end parameter on stack
+ *
+ * returns
+ *      pointer to relevant part of input string
+ *      
+ * throws
+ *      invalid parameter - when start or stop are out of bounds
+ *
+ * rationale
+ *      using string.sub in user code whould have the same effect 
+ *      but it would be slightly less efficient and without
+ *      bounds checking
+ */
+static const unsigned char *get_substring(
+        lua_State *l, 
+        size_t *len,
+        int string_param,
+        int start_param,
+        int end_param)
+{
+    size_t original_length = 0;
+    const unsigned char *original_start = luaL_checklstring(l, string_param, &original_length); 
+
+    /* Lua style */
+    int start_position = 1;
+    int end_position = original_length;
+
+    /* C style */
+    size_t start_offset = 0;
+    size_t end_offset = original_length;
+
+    if(lua_gettop(l) >= start_param)
+    {
+        start_position = luaL_checkinteger(l, start_param);
+        if(start_position < 0)
+        {
+            start_offset = original_length + start_position;
+        }
+        else
+        {
+            start_offset = start_position - 1;
+        }
+    }
+    if(lua_gettop(l) >= end_param)
+    {
+        end_position = luaL_checkinteger(l, end_param);
+        if(end_position < 0)
+        {
+            end_offset = original_length + end_position + 1;
+        }
+        else
+        {
+            end_offset = end_position;
+        }
+    }
+
+    if(start_offset >= end_offset)
+    {
+        luaL_error(l, "invalid parameter: start position %d, end position %d", 
+                start_position, end_position);
+    }
+
+    if(end_offset > original_length)
+    {
+        luaL_error(l, "invalid parameter: start position %d, end position %d", 
+                start_position, end_position);
+    }
+    *len = end_offset - start_offset;
+    return original_start + start_offset;
+ }
+
+/*
+ * name
  *      l_unpack
  *
  * description
@@ -1178,7 +1262,8 @@ static int l_pack(lua_State *l)
 static int l_unpack(lua_State *l)
 {
     size_t source_len = 0;
-    const unsigned char *source = luaL_checklstring(l, 2, &source_len); 
+    const unsigned char *source = get_substring(l, &source_len, 2, 3, 4);
+
     UNPACK_STATE state;
     state.return_count = 0;
     state.current_bit = 0;

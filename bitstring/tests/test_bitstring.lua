@@ -203,26 +203,18 @@ local test21 = function()
     local unpacked_values = {bitstring.unpack(format, expected)}
     local expected_values = {0x01, 0xff, 0x7f}
     test_helpers.assert_tables_equal(unpacked_values, expected_values)
-end
-
-local hex_to_bin = function(hexstream)
-    -- assert valid input - hex digits, even
-    -- remove spaces, etc.
-    bint = {}
-    for byte in string.gfind(hexstream, "(..)") do
-        table.insert(bint, tonumber(byte, 16))
-    end
-    return string.char(unpack(bint))
+    local unpacked_values = {bitstring.unpack(format, expected, 1, -1)}
+    test_helpers.assert_tables_equal(unpacked_values, expected_values)
 end
 
 peap_message_hex_stream = "010103f419c000000841160301004a02000046030149dc8f5707d07796bc76077dc2e169c22eff46a09809ae9c472ec420d03e99342010d83177ce0f88a7edc6fa1e691ee25c2ae75875f2e25929765355adc24abebc00350016030107e40b0007e00007dd0003c0308203bc30820325a0030201020203100002300d06092a864886f70d010104050030819c310b300906035504061302494c311e301c060355040813155374617465204f722050726f76696365204e616d653110300e060355040713074e6174616e6961310e300c060355040a1305436973636f31153013060355040b130c414353204469766973696f6e3111300f060355040313084341666f724143533121301f06092a864886f70d01090116124341666f7241435340636973636f2e636f6d301e170d3038313131303133333430345a170d3039313131303133333430345a30819f310b300906035504061302494c311f301d060355040813165374617465204f722050726f76696e6365204e616d653110300e060355040713074e6174616e6961310e300c060355040a1305436973636f31153013060355040b130c414353204469766973696f6e31123010060355040313094143535365727665723122302006092a864886f70d010901161341435353657276657240636973636f2e636f6d30819f300d06092a864886f70d010101050003818d0030818902818100d421b66c51bb0a667e213055718ee1725263dd28c6a4f25aff66428b435a292bfd33a3ced96604dbb69820dcfc8a3f56bea3747448676e1b6882e12e5fa915287452160adb4407527edc68d0628b8ba1ae5dcbaf632ca8c77146d2faef702e2be14cfb567c80c6019d3f45aea8ddcde84fa446292d10e9c875e6f386324e91390203010001a382010530820101300c0603551d130101ff04023000301f0603551d23041830168014ed84b9c28519344cc39a569e91c4023154be5c13301d0603551d0e04160414f9b2ed6245ec207c0c5ba61efe81b98d96c24140300b0603551d0f0404030205e0301d0603551d250416301406082b0601050507030106082b06010505070302301106096086480186f8420101040403020450304106096086480186f842010d043416325365727665722063657274696669636174652067656e657261746564207573696e67204f70656e53534c20666f7220414353302f06096086480186f842010404221620687474703a2f2f7777772e646f6d61696e2e646f6d2f63612d63726c2e70656d300d06092a864886f70d010104050003818100781544d883871860c4f4eeaca9e2f9a21e829d0df6cb58354e7f7ef8ef9d8d26cbbde559b2d23bfb5c43712dfee60575dfb1cecd0996108528c606563e73ed4242020524b1ec65e9c1b7ed6c"
-
+                          
 EAP_REQUEST = 1
 EAP_RESPONSE = 2
 EAP_TYPE_PEAP = 0x19
 
 local peap_example = function()
-    local peap_message = hex_to_bin(peap_message_hex_stream)
+    local peap_message = bitstring.fromhexstream(peap_message_hex_stream)
 
     local code, identifier, length, eap_type, rest = 
         bitstring.unpack([[8:int, 
@@ -256,8 +248,51 @@ local peap_example = function()
     end
 end
 
+local test22 = function()
+    local bin = bitstring.fromhexstream(peap_message_hex_stream)
+
+    local bin_length = #bin
+    local result = {}
+    local i = 1
+    while i <= bin_length - 6 do
+        table.insert(result,  bitstring.unpack("7:bin", bin, i, i + 6))
+        i = i + 7
+    end
+    if i > bin_length - 6 then
+        table.insert(result,  bitstring.unpack((bin_length - i + 1)..":bin", bin, i, bin_length))
+    end
+    result_bin = table.concat(result)
+    test_helpers.assert_equal(bin, result_bin)
+end
+
+local test23 = function()
+    test_helpers.assert_throw(
+        function()
+            bitstring.unpack("8:int", "A", 2)
+        end,
+        "invalid parameter")
+
+    test_helpers.assert_throw(
+        function()
+            bitstring.unpack("8:int", "A", 1, 3)
+        end,
+        "invalid parameter")
+
+    test_helpers.assert_throw(
+        function()
+            bitstring.unpack("8:int", "A", -2)
+        end,
+        "invalid parameter")
+
+    test_helpers.assert_throw(
+        function()
+            bitstring.unpack("8:int, 8:int", "AB", 2, 1)
+        end,
+        "invalid parameter")
+end
 
 -- test more format arguments then actual arguments 
+-- test unpack empty string
 -- test less format arguments then actual arguments 
 -- test sum of bits is not % 8
 -- test unpack has more bits then input
@@ -271,8 +306,9 @@ end
 
 
 local run_tests = function()
-    os.exit(0)
     --test_helpers.disable_print()
+    test_helpers.run_test("test23", test23)
+    test_helpers.run_test("test22", test22)
     test_helpers.run_test("test21", test21)
     test_helpers.run_test("test20", test20)
     test_helpers.run_test("test19", test19)

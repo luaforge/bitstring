@@ -97,6 +97,11 @@ local test7 = function()
     local result = bitstring.hexstream(input)
     assert(result == expected)
     assert(bitstring.fromhexstream(result) == input)
+    assert(bitstring.fromhexstream(result, 1, -1) == input)
+    assert(bitstring.fromhexstream(result, 3, -3) == string.sub(input, 2, -2))
+    assert(bitstring.hexstream(input, 3, 3) == "02")
+    assert(bitstring.hexstream(input, 3, 4) == "0203")
+    assert(bitstring.hexstream(input, -3, -2) == "1819")
 end
 
 local test8 = function()
@@ -123,11 +128,12 @@ local test8 = function()
 end
 
 local test9 = function()
-    local expected = ""
-    local result = bitstring.hexstream("")
-    assert(result == expected)
-    assert(bitstring.fromhexstream(result) == "")
-    assert(bitstring.hexdump("") == "")
+    -- don't allow empty strings
+    -- local expected = ""
+    -- local result = bitstring.hexstream("")
+    -- assert(result == expected)
+    -- assert(bitstring.fromhexstream(result) == "")
+    -- assert(bitstring.hexdump("") == "")
 end
 
 -- test long hex
