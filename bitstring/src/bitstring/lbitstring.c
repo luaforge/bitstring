@@ -330,7 +330,8 @@ static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value,
     unsigned char *current_byte = state->prep_buffer + state->current_bit / CHAR_BIT;
 
     /* whenever the temporary prep_buffer is full flush it into result buffer */
-    if(state->current_bit + elem->size > state->result_bits)
+    /* leave one spare byte for code that zeroes a byte ahead */
+    if(state->current_bit + elem->size >= state->result_bits)
     {
         size_t size = current_byte - state->prep_buffer;
         /* save the unfinished byte for next prep_buffer */
@@ -351,8 +352,8 @@ static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value,
         {
             *current_byte = val_buff[i];
             ++current_byte;
-            *current_byte = 0;
         }
+        *current_byte = 0;
     }
     else if(bit_offset == 0 && source_bit_offset != 0)
     {
@@ -450,6 +451,33 @@ static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value,
     state->current_bit += count_packed_bits;
 }
 
+static void pack_aligned_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, const unsigned char *bin, size_t len, PACK_STATE *state)
+{
+    size_t reminder = len;
+    unsigned char *current_byte = state->prep_buffer + state->current_bit / CHAR_BIT;
+    size_t space = state->prep_buffer + LUAL_BUFFERSIZE - current_byte;
+    if(reminder <= space)
+    {
+        memcpy(current_byte, bin, reminder);
+        state->current_bit += len * CHAR_BIT;
+    }
+    else
+    {
+        while(reminder > 0)
+        {
+            size_t size = current_byte - state->prep_buffer;
+            luaL_addsize(state->buffer, size);
+
+            state->prep_buffer = luaL_prepbuffer(state->buffer);
+            current_byte = state->prep_buffer;
+            size_t space = reminder <= LUAL_BUFFERSIZE ? reminder : LUAL_BUFFERSIZE;
+            memcpy(current_byte, bin, space);
+            reminder -= space;
+            state->current_bit = space * CHAR_BIT;
+        }
+    }
+}
+
 /*
  * name
  *      pack_bin
@@ -478,14 +506,21 @@ static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value,
  */
 static void pack_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, const unsigned char *bin, size_t len, PACK_STATE *state)
 {
-    size_t i;
-    for(i = 0; i < len; ++i)
+    if(state->current_bit % CHAR_BIT == 0)
     {
-        ELEMENT_DESCRIPTION elem;
-        elem.size = CHAR_BIT;
-        elem.endianess = EE_BIG;
-        elem.type = ET_INTEGER; 
-        pack_int(l, &elem, bin[i], state);
+        pack_aligned_bin(l, elem, bin, len, state);
+    }
+    else
+    {
+        size_t i;
+        for(i = 0; i < len; ++i)
+        {
+            ELEMENT_DESCRIPTION elem;
+            elem.size = CHAR_BIT;
+            elem.endianess = EE_BIG;
+            elem.type = ET_INTEGER; 
+            pack_int(l, &elem, bin[i], state);
+        }
     }
 }
 
@@ -1006,7 +1041,8 @@ static void parse(lua_State *l, ELEM_HANDLER handler, void *arg)
     size_t token_len = 0;
     ELEMENT_DESCRIPTION elem;
     memset(&elem, 0, sizeof(elem));
-    PARSE_STATE state = SIZE_STATE;
+    /* allow leading space */
+    PARSE_STATE state = SPACE_STATE;
     int argnum = 2;
     int i = 0;
     while(i < len)

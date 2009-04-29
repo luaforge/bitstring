@@ -8,7 +8,8 @@ ln -s ../src/bitstring/.libs/bitstring.so bitstring.so
 LUA=lua
 TESTS="test_bitstring \
        test_hexdump\
-       test_bindump"
+       test_bindump\
+       test_profiler"
 
 for test_name in $TESTS; do
     test='./'$test_name'.lua'

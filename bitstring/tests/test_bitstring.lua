@@ -291,6 +291,23 @@ local test23 = function()
         "invalid parameter")
 end
 
+local test24 = function()
+    local length = 1024 * 7 
+    local result = bitstring.pack("16:int, all:bin, 16:int",
+            1, string.rep("A", length), 2)
+
+    local result = bitstring.pack("13:int, all:bin, 3:int",
+            1, string.rep("A", length), 2)
+
+    local values = {}
+    local format = {}
+    for i = 1, length do
+        table.insert(values, i)
+        table.insert(format, "32:int,")
+    end
+    result = bitstring.pack(table.concat(format), unpack(values))
+end
+
 -- test more format arguments then actual arguments 
 -- test unpack empty string
 -- test less format arguments then actual arguments 
@@ -307,6 +324,7 @@ end
 
 local run_tests = function()
     --test_helpers.disable_print()
+    test_helpers.run_test("test24", test24)
     test_helpers.run_test("test23", test23)
     test_helpers.run_test("test22", test22)
     test_helpers.run_test("test21", test21)
