@@ -16,5 +16,5 @@ lib_LTLIBRARIES += libbitstring.la
 libbitstring_la_SOURCES = lbitstring.c
 libbitstring_la_SOURCES += bitstring.h
 libbitstring_la_LIBADD = -llua -lm 
-libbitstring_la_LDFLAGS = -module -version-info 0:0:0 -release $(BITSTRING_VERSION)
+libbitstring_la_LDFLAGS = -version-info 0:0:0 -release $(BITSTRING_VERSION)
 
