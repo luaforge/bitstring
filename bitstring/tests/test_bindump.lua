@@ -116,7 +116,6 @@ local test4 = function()
         input[i + 1]  = string.char(i)
     end
     input = table.concat(input)
-    print(bitstring.bindump(input))
     assert(bitstring.bindump(input) == expected)
 end
 
@@ -135,7 +134,6 @@ local test5 = function()
         input[i + 1]  = string.char(i)
     end
     input = table.concat(input)
-    print(bitstring.bindump(input))
     assert(bitstring.bindump(input) == expected)
 end
 
@@ -196,7 +194,7 @@ local test9 = function()
 end
 
 local run_tests = function()
-    --disable_print()
+    test_helpers.disable_print()
     test_helpers.run_test("test9", test9)
     test_helpers.run_test("test8", test8)
     test_helpers.run_test("test7", test7)

@@ -140,7 +140,7 @@ end
 
 
 local run_tests = function()
-    --disable_print()
+    test_helpers.disable_print()
     test_helpers.run_test("test9", test9)
     test_helpers.run_test("test8", test8)
     test_helpers.run_test("test7", test7)

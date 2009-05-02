@@ -9,6 +9,7 @@ LUA=lua
 TESTS="test_bitstring \
        test_hexdump\
        test_bindump\
+       test_compile\
        test_profiler"
 
 for test_name in $TESTS; do

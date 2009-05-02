@@ -62,10 +62,9 @@ local assert_tables_equal = function(result, expected)
     end
 end
 
-local run_pack_unpack_test = function(format, packed_values, expected_result)
-    local result = bitstring.pack(format, unpack(packed_values)) 
+local run_pack_unpack_test = function(pack_format, unpack_format, packed_values, expected_result)
+    local result = bitstring.pack(pack_format, unpack(packed_values)) 
     assert_equal(result, expected_result)
-    local unpack_format = string.gsub(format, "all:bin", "rest:bin")
     local unpacked_values = {bitstring.unpack(unpack_format, result)}
     assert_tables_equal(unpacked_values, packed_values)
 end

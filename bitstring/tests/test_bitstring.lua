@@ -3,7 +3,7 @@ require "bitstring"
 require "test_helpers"
 
 local test1 = function()
-    test_helpers.assert_throw(function() bitstring.pack() end, "bad argument #1 to 'pack' (string expected, got no value)")
+    test_helpers.assert_throw(function() bitstring.pack() end, "bad argument #1 to 'pack' (bitstring.bitmatch or string expected, got no value)")
     test_helpers.assert_throw(function() bitstring.unpack("8:bin") end, "bad argument #2 to 'unpack' (string expected, got no value)")
 end
 
@@ -11,21 +11,21 @@ local test2 = function()
     local expected = "\1\2\1\4\3\2\1hello"
     local packed_values = {0x1, 0x0102, 0x01020304, "hello"}
     local format = "8:int:little, 16:int:little, 32:int:little, 5:bin"
-    test_helpers.run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, format, packed_values, expected)
 end
 
 local test3 = function()
     local expected = "\1"
     local packed_values = {0x01}
     local format = "8:int"
-    test_helpers.run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, format, packed_values, expected)
 end
 
 local test4 = function()
     local expected = "\1\1\2\1\2\3\4hello"
     local packed_values = {0x1, 0x0102, 0x01020304, "hello"}
     local format = "8:int, 16:int:big, 32:int:big, 5:bin"
-    test_helpers.run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, format, packed_values, expected)
 end
 
 local test5 = function()
@@ -34,7 +34,7 @@ local test5 = function()
     local packed_values = {}
     local format = string.rep("1:int,", 16)
     for i = 1, 16, 1 do packed_values[i] = 1 end
-    test_helpers.run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, format, packed_values, expected)
 end
 
 
@@ -42,21 +42,21 @@ local test6 = function()
     local expected = "\240\16\16\32\16\32\48\79"
     local packed_values = {0x0f, 0x1, 0x0102, 0x01020304, 0x0f}
     local format = "4:int, 8:int, 16:int:big, 32:int:big, 4:int"
-    test_helpers.run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, format, packed_values, expected)
 end
 
 local test7 = function()
     local expected = "\255\255"
     local packed_values = {0x01, 0xff, 0x7f}
     local format = "1:int, 8:int, 7:int"
-    test_helpers.run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, format, packed_values, expected)
 end
 
 local test8 = function()
     local expected = "\255\255"
     local packed_values = {0x07, 0x3f, 0x7f}
     local format = "3:int, 6:int, 7:int"
-    test_helpers.run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, format, packed_values, expected)
 end
 
 local test9 = function()
@@ -64,28 +64,29 @@ local test9 = function()
     local expected = string.rep("\255", LUAL_BUFFERSIZE + 1)
     local packed_values = {0x07, string.rep("\255", LUAL_BUFFERSIZE), 0x1f}
     local format = "3:int, "..LUAL_BUFFERSIZE..":bin, 5:int"
-    test_helpers.run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, format, packed_values, expected)
 end
 
 local test10 = function()
     local expected = "\160"
     local packed_values = {0x01, 0x0, 0x01, 0x0}
     local format = "1:int, 1:int, 1:int, 5:int"
-    test_helpers.run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, format, packed_values, expected)
 end
 
 local test11 = function()
     local expected = "\170\170"
     local packed_values = {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0}
     local format = string.rep("1:int, ", 16)
-    test_helpers.run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, format, packed_values, expected)
 end
 
 local test12 = function()
     local expected = "\1\2\1\4\3\2\1hello"
     local packed_values = {0x01, 0x0102, 0x01020304, "hello"}
     local format = "8:int:little, 16:int:little, 32:int:little, all:bin"
-    test_helpers.run_pack_unpack_test(format, packed_values, expected)
+    local unpack_format = "8:int:little, 16:int:little, 32:int:little, rest:bin"
+    test_helpers.run_pack_unpack_test(format, unpack_format, packed_values, expected)
 end
 
 local test13 = function()
@@ -160,14 +161,15 @@ local test17 = function()
     local expected = "\1\2\1\4\3\2\1hello"
     local packed_values = {0x01, 0x0102, 0x01020304, "hello"}
     local format = "8:int:little, 16:int:little, 32:int:little, all:bin "
-    test_helpers.run_pack_unpack_test(format, packed_values, expected)
+    local unpack_format = "8:int:little, 16:int:little, 32:int:little, rest:bin "
+    test_helpers.run_pack_unpack_test(format, unpack_format, packed_values, expected)
 end
 
 local test18 = function()
     local expected = "\1\2\1\4\3\2\1"
     local packed_values = {0x1, 0x0102, 0x01020304, "hello"}
     local format = "8:int:little, 16:int:little, 32:int:little,     "
-    test_helpers.run_pack_unpack_test(format, packed_values, expected)
+    test_helpers.run_pack_unpack_test(format, format, packed_values, expected)
 end
 
 local test19 = function()
@@ -308,6 +310,31 @@ local test24 = function()
     result = bitstring.pack(table.concat(format), unpack(values))
 end
 
+
+local test25 = function()
+    local count_elements = 1024 * 7
+    local format = string.rep("8:bin,", count_elements)
+    local input = string.rep("01234567", count_elements)
+    local unpacked_values = {bitstring.unpack(format, input)}
+    for i, v in ipairs(unpacked_values) do
+        assert(v == "01234567")
+    end
+end
+
+local test26 = function()
+    local count_elements = 1024 * 7
+
+    local format = string.rep("32:int, ", count_elements)
+    local input = string.rep("\1\2\3\4", count_elements)
+    local unpacked_values = {bitstring.unpack(format, input)}
+    for i, v in ipairs(unpacked_values) do
+        assert(v == 16909060)
+    end
+end
+
+
+
+
 -- test more format arguments then actual arguments 
 -- test unpack empty string
 -- test less format arguments then actual arguments 
@@ -323,7 +350,9 @@ end
 
 
 local run_tests = function()
-    --test_helpers.disable_print()
+    test_helpers.disable_print()
+    test_helpers.run_test("test26", test26)
+    test_helpers.run_test("test25", test25)
     test_helpers.run_test("test24", test24)
     test_helpers.run_test("test23", test23)
     test_helpers.run_test("test22", test22)

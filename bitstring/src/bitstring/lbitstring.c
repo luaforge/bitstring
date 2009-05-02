@@ -165,10 +165,37 @@ typedef struct
     const unsigned char *source_end;
 } UNPACK_STATE;
 
+/* 
+ * bitmatch userdata
+ */
+typedef struct
+{
+    /* count of elements in array. */
+    /* this value is set in the end of compiling */
+    size_t element_count;
+    /* start of array of elements */
+    ELEMENT_DESCRIPTION elements[1];
+} BITMATCH;
+
+/*
+ * compile state passed between handler function invocations */
+typedef struct
+{
+    /* current element */
+    size_t current;
+    /* total element count in bitmatch array */
+    size_t element_count;
+    /* the object that will be returned from compile function */
+    BITMATCH *bitmatch;
+} COMPILE_STATE;
+
+
 /*
  * pointer to callback function that process elements
  */
 typedef void (*ELEM_HANDLER)(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, void *arg);
+
+static BITMATCH *get_bitmatch(lua_State *l, int index);
 
 /*
  * name
@@ -726,15 +753,6 @@ static lua_Integer unpack_int_no_push(lua_State *l, ELEMENT_DESCRIPTION *elem, i
         memcpy(result_buffer, current_byte, bytes_to_copy);
         result = toint(l, elem, arg_index, result_buffer, sizeof(result_buffer)); 
     }
-    /*
-     * check optimization opportunities
-    else if(bit_offset != 0 && result_bit_offset == 0)
-    {
-    }
-    else if(bit_offset == 0 && result_bit_offset != 0)
-    {
-    }
-    */
     else
     {
         /* check for source end */
@@ -771,6 +789,30 @@ static lua_Integer unpack_int_no_push(lua_State *l, ELEMENT_DESCRIPTION *elem, i
 
 /*
  * name
+ *      grow_unpack_stack
+ *
+ * description
+ *      grow the stack to have space for return values
+ *      when unpacking using simple const increment
+ *
+ * paramenters
+ *      l - lua state
+ *      state - unpack state passed between invocations
+ */
+static void grow_unpack_stack(lua_State *l, UNPACK_STATE *state)
+{
+    if(state->return_count % 32 == 1)
+    {
+        int result = lua_checkstack(l, 32);
+        if(!result)
+        {
+            luaL_error(l, "too many elements to unpack (%d)", state->return_count);
+        }
+    }
+}
+
+/*
+ * name
  *      unpack_int
  *
  * description
@@ -788,6 +830,7 @@ static void unpack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, U
 {
     lua_Integer result = unpack_int_no_push(l, elem, arg_index, state);
     ++state->return_count;
+    grow_unpack_stack(l, state);
     lua_pushinteger(l, result);
 }
 
@@ -854,6 +897,7 @@ static void unpack_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, U
         luaL_addsize(&b, j);
     }
     ++state->return_count;
+    grow_unpack_stack(l, state);
     luaL_pushresult(&b);
 }
 
@@ -1000,7 +1044,7 @@ static size_t tosize(lua_State *l, const char *token, size_t token_len)
 
 /*
  * name
- *      parse
+ *      parse_format
  *
  * description
  *      parse format string and call handler function for
@@ -1030,9 +1074,8 @@ static size_t tosize(lua_State *l, const char *token, size_t token_len)
  *
  * future work
  *      check for performance
- *      rewrite better - less code, faster
  */
-static void parse(lua_State *l, ELEM_HANDLER handler, void *arg)
+static void parse_format(lua_State *l, ELEM_HANDLER handler, void *arg)
 {
     size_t len = 0;
     const char *format = luaL_checklstring(l, 1, &len);
@@ -1166,36 +1209,64 @@ static void parse(lua_State *l, ELEM_HANDLER handler, void *arg)
             break;
     }
 }
-
+ 
 /*
  * name
- *      l_pack
+ *      parse_bitmatch
  *
  * description
- *      lua_CFunction for packing
+ *      iterate over array of elements and call handler for each
  *
  * paramenters
  *      l - lua state
- *
- * returns
- *      pushes the result string onto lua stack and
- *      returns 1
+ *      handler - handler for the element (un/pack_elem)
+ *      arg - opaque argument passed between handlers
  */
-static int l_pack(lua_State *l)
+static void parse_bitmatch(lua_State *l, ELEM_HANDLER handler, void *arg)
 {
-    luaL_Buffer b; 
-    luaL_buffinit(l, &b);
+    BITMATCH *bitmatch = get_bitmatch(l, 1);
+    size_t i;
+    for(i = 0; i < bitmatch->element_count; ++i)
+    {
+        handler(l, &bitmatch->elements[i], i + 2, arg);
+    }
+}
 
-    PACK_STATE state;
-    state.buffer = &b;
-    state.prep_buffer = luaL_prepbuffer(&b);
-    state.current_bit = 0;
-    state.result_bits = LUAL_BUFFERSIZE * CHAR_BIT;
+/*
+ * name
+ *      parse
+ *
+ * description
+ *      dispatch for actual parsing by input type
+ *
+ * paramenters
+ *      l - lua state
+ *      handler - element handler
+ *      arg - agument passed between invocations
+ *
+ * throws
+ *      argcheck error - when input is not string or bitmatch
+ */
+static void parse(lua_State *l, ELEM_HANDLER handler, void *arg)
+{
+    if(lua_isstring(l, 1))
+    {
+        parse_format(l, handler, arg);
+    }
+    else if(lua_isuserdata(l, 1) && get_bitmatch(l, 1) != NULL)
+    {
+        parse_bitmatch(l, handler, arg);
+    }
+    else
+    {
+        char message[255];
+        snprintf(message, sizeof(message), 
+                "bitstring.bitmatch or string expected, got %s",
+                lua_typename(l, lua_type(l, 1)));
+        message[sizeof(message) - 1] = '\0';
 
-    parse(l, pack_elem, (void *)&state);
-    luaL_addsize(&b, state.current_bit / CHAR_BIT);
-    luaL_pushresult(&b);
-    return 1;
+        luaL_argcheck (l, 0, 1, message);
+    }
 }
 
 /*
@@ -1280,7 +1351,38 @@ static const unsigned char *get_substring(
     }
     *len = end_offset - start_offset;
     return original_start + start_offset;
- }
+}
+
+/*
+ * name
+ *      l_pack
+ *
+ * description
+ *      lua_CFunction for packing
+ *
+ * paramenters
+ *      l - lua state
+ *
+ * returns
+ *      pushes the result string onto lua stack and
+ *      returns 1
+ */
+static int l_pack(lua_State *l)
+{
+    luaL_Buffer b; 
+    luaL_buffinit(l, &b);
+
+    PACK_STATE state;
+    state.buffer = &b;
+    state.prep_buffer = luaL_prepbuffer(&b);
+    state.current_bit = 0;
+    state.result_bits = LUAL_BUFFERSIZE * CHAR_BIT;
+
+    parse(l, pack_elem, (void *)&state);
+    luaL_addsize(&b, state.current_bit / CHAR_BIT);
+    luaL_pushresult(&b);
+    return 1;
+}
 
 /*
  * name
@@ -1310,6 +1412,120 @@ static int l_unpack(lua_State *l)
     return state.return_count;
 }
 
+/*
+ * name
+ *      get_bitmatch
+ *
+ * description
+ *      get a userdata from index and verify that it is bitstring.bitmatch
+ *
+ * paramenters
+ *      l - lua state
+ *      index - parameter index
+ *
+ * returns
+ *      pointer to BITMATCH or NULL
+ */
+static BITMATCH *get_bitmatch(lua_State *l, int index)
+{
+    BITMATCH *bitmatch = (BITMATCH *)luaL_checkudata(l, index, "bitstring.bitmatch");
+    return bitmatch;
+}
+
+/*
+ * name
+ *      realloc_bitmatch
+ *
+ * description
+ *      allocate a new buffer for bitmatch and copy to it
+ *      contents of previous bitmatch if not NULL
+ *
+ * paramenters
+ *      l - lua state
+ *      state - compile state
+ *
+ * returns
+ *      pointer to new BITMATCH
+ */
+static BITMATCH *realloc_bitmatch(
+        lua_State *l, 
+        COMPILE_STATE *state)
+{
+    BITMATCH *current_bitmatch = state->bitmatch;
+    size_t current_element_count = state->element_count;
+    /* if reallocating existing bitmatch double number of elements */
+    size_t new_element_count = current_bitmatch ? 
+        current_element_count * 2 : current_element_count;
+    size_t udata_size = sizeof(BITMATCH) + sizeof(ELEMENT_DESCRIPTION) * (new_element_count - 1);
+    BITMATCH *new_bitmatch = (BITMATCH *)lua_newuserdata(l, udata_size);
+    luaL_getmetatable(l, "bitstring.bitmatch");
+    lua_setmetatable(l, -2);
+
+    if(current_bitmatch != NULL)
+    {
+        size_t current_udata_size = 
+            sizeof(BITMATCH) + sizeof(ELEMENT_DESCRIPTION) * (current_element_count - 1);
+        memcpy(new_bitmatch, current_bitmatch, current_udata_size);
+        /* remove the previous bitmatch from stack */
+        lua_remove(l, -2);
+    }
+    state->bitmatch = new_bitmatch;
+    state->bitmatch->element_count = 0;
+    state->element_count = new_element_count;
+    return new_bitmatch;
+}
+
+/*
+ * name
+ *      compile_elem
+ *
+ * description
+ *      handler callback that is called by parse function
+ *
+ * paramenters
+ *      l - lua state
+ *      elem - element description
+ *      arg_index - number of element in format string. starts from 1 
+ *      arg - compile  state and intermediate results that are passed between
+ *              invocations
+ */
+static void compile_elem(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, void *arg)
+{
+    COMPILE_STATE *state = (COMPILE_STATE *)arg;
+    if(state->current == state->element_count)
+    {
+        realloc_bitmatch(l, state);
+    }
+    memcpy(&state->bitmatch->elements[state->current], elem, sizeof(ELEMENT_DESCRIPTION)); 
+    ++state->current;
+}
+
+/*
+ * name
+ *      l_compile
+ *
+ * description
+ *      lua_CFunction for compiling format string to bitmatch array
+ *
+ * paramenters
+ *      l - lua state
+ *
+ * returns
+ *      1
+ */
+static int l_compile(lua_State *l)
+{
+    size_t default_element_count = 32;
+    COMPILE_STATE state;
+    state.current = 0;
+    state.element_count = default_element_count;
+    state.bitmatch = NULL;
+    realloc_bitmatch(l, &state);
+    parse(l, compile_elem, (void *)&state);
+    state.bitmatch->element_count = state.current;
+    return 1;
+}
+
 #include "bitstring/lhexdump.c"
 #include "bitstring/lbindump.c"
 
@@ -1317,6 +1533,7 @@ static const struct luaL_reg bitstring [] =
 {
     {"pack", l_pack},
     {"unpack", l_unpack},
+    {"compile", l_compile},
     {"hexdump", l_hexdump},
     {"hexstream", l_hexstream},
     {"fromhexstream", l_fromhexstream},
@@ -1325,6 +1542,23 @@ static const struct luaL_reg bitstring [] =
     {"frombinstream", l_frombinstream},
     {NULL, NULL}  /* sentinel */
 };
+
+static int bitmatch_gc(lua_State *l)
+{
+    BITMATCH *bitmatch = (BITMATCH *)lua_touserdata(l, 1);
+    /*
+    printf("deleting bitmatch with %d elements\n", bitmatch->element_count);
+    */
+    return 0;
+}
+
+static void init_bitmatch_type(lua_State *l)
+{
+    luaL_newmetatable(l, "bitstring.bitmatch");
+    lua_pushstring(l, "__gc");
+    lua_pushcfunction(l, bitmatch_gc);
+    lua_settable(l, -3);
+}
 
 /*
  * name
@@ -1342,6 +1576,7 @@ static const struct luaL_reg bitstring [] =
  */
 int luaopen_bitstring(lua_State *l) 
 {
+    init_bitmatch_type(l);
     luaL_openlib(l, "bitstring", bitstring, 0);
     return 1;
 }
