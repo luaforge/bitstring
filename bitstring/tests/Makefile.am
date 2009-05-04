@@ -9,6 +9,8 @@ EXTRA_DIST += test_helpers.lua
 EXTRA_DIST += test_bitstring.lua
 EXTRA_DIST += test_hexdump.lua
 EXTRA_DIST += test_bindump.lua
+EXTRA_DIST += test_compile.lua
+EXTRA_DIST += test_profiler.lua
 
 test_bitstring_SOURCES = test_bitstring.c
 test_bitstring_LDADD = -lbitstring

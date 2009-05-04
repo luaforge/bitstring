@@ -1,0 +1,203 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1255">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.0  (Win32)">
+	<META NAME="CREATED" CONTENT="20090426;7275700">
+	<META NAME="CHANGED" CONTENT="20090503;22381000">
+	<META NAME="Info 1" CONTENT="">
+	<META NAME="Info 2" CONTENT="">
+	<META NAME="Info 3" CONTENT="">
+	<META NAME="Info 4" CONTENT="">
+</HEAD>
+<BODY LANG="zxx" DIR="LTR">
+<P ALIGN=CENTER><FONT FACE="Times New Roman, serif"><FONT SIZE=6><SPAN LANG="en-US">bitstring
+reference</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US"><FONT FACE="Courier New, monospace">require
+</FONT><FONT COLOR="#c5000b"><FONT FACE="Courier New, monospace">&quot;bitstring&quot;</FONT></FONT></SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">load
+the bitstring module</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm; border-top: none; border-bottom: 1px solid #000000; border-left: none; border-right: none; padding-top: 0cm; padding-bottom: 0.07cm; padding-left: 0cm; padding-right: 0cm">
+<BR><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><BR><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Courier New, monospace"><FONT SIZE=4><SPAN LANG="en-US">bitstring.pack(format,
+arg1 [, arg2, &hellip;, argn]) &rarr; result</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Courier New, monospace"><FONT SIZE=4><SPAN LANG="en-US">bitstring.pack(bitmatch,
+arg1 [, arg2, &hellip;, argn]) &rarr; result</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">Pack
+one or more elements as specified by format or by bitmatch into
+regular Lua string. </SPAN></FONT></FONT>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm; border-top: none; border-bottom: 1px solid #000000; border-left: none; border-right: none; padding-top: 0cm; padding-bottom: 0.07cm; padding-left: 0cm; padding-right: 0cm">
+<BR><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><BR><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Courier New, monospace"><FONT SIZE=4><SPAN LANG="en-US">bitstring.unpack(format,
+s [, start, end]) &rarr; r1 [, r2, &hellip;, rn] </SPAN></FONT></FONT>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Courier New, monospace"><FONT SIZE=4><SPAN LANG="en-US">bitstring.unpack(bitmatch,
+s [, start, end]) &rarr; r1 [, r2, &hellip;, rn]</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">Unpack
+one or more elements as specified by format or by bitmatch and return
+them as multiple values. Substring of s may be specified by start and
+end parameters. See substring parameters below.</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm; border-top: none; border-bottom: 1px solid #000000; border-left: none; border-right: none; padding-top: 0cm; padding-bottom: 0.07cm; padding-left: 0cm; padding-right: 0cm">
+<BR><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><BR><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Courier New, monospace"><FONT SIZE=4><SPAN LANG="en-US">bitstring.compile(format)
+&rarr; bitmatch</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">Compile
+format into bitmatch object. Bitmach object may be used where format
+is expected to increase efficiency of packing/unpacking expressions.</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm; border-top: none; border-bottom: 1px solid #000000; border-left: none; border-right: none; padding-top: 0cm; padding-bottom: 0.07cm; padding-left: 0cm; padding-right: 0cm">
+<BR><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><BR><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Courier New, monospace"><FONT SIZE=4><SPAN LANG="en-US">bitstring.hexdump(s
+[, start, end])</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">Dump
+string s into multi line &ldquo;offset - hexadecimal bytes - text&rdquo;
+similar to xxd output. Substring of s may be specified by start and
+end parameters. See substring parameters below.</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">Note:
+Lines are separated by '\n'. I am considering returning a table of
+lines instead</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm; border-top: none; border-bottom: 1px solid #000000; border-left: none; border-right: none; padding-top: 0cm; padding-bottom: 0.07cm; padding-left: 0cm; padding-right: 0cm">
+<BR><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><BR><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Courier New, monospace"><FONT SIZE=4><SPAN LANG="en-US">bitstring.hexstream(s
+[, start, end])</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">Dump
+string s into single line hexadecimal digit stream. Substring of s
+may be specified by start and end parameters. See substring
+parameters below.</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm; border-top: none; border-bottom: 1px solid #000000; border-left: none; border-right: none; padding-top: 0cm; padding-bottom: 0.07cm; padding-left: 0cm; padding-right: 0cm">
+<BR><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><BR><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Courier New, monospace"><FONT SIZE=4><SPAN LANG="en-US">bitstring.fromhexstream(s
+[, start, end])</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">Convert
+hexadecimal stream of bytes to regular Lua string. Useful for
+manipulating hexadecimal streams copied from wireshark. Substring of
+s may be specified by start and end parameters. See substring
+parameters below.</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm; border-top: none; border-bottom: 1px solid #000000; border-left: none; border-right: none; padding-top: 0cm; padding-bottom: 0.07cm; padding-left: 0cm; padding-right: 0cm">
+<BR><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><BR><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Courier New, monospace"><FONT SIZE=4><SPAN LANG="en-US">bitstring.bindump(s
+[, start, end])</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">Dump
+string s into multi line &ldquo;offset &ndash; binary digits - text&rdquo;
+similar to xxd -b output. Useful for visually validating UTF-8 input.
+Substring of s may be specified by start and end parameters. See
+substring parameters below.</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">Note:
+Lines are separated by '\n'. I am considering returning a table of
+lines instead</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm; border-top: none; border-bottom: 1px solid #000000; border-left: none; border-right: none; padding-top: 0cm; padding-bottom: 0.07cm; padding-left: 0cm; padding-right: 0cm">
+<BR><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><BR><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Courier New, monospace"><FONT SIZE=4><SPAN LANG="en-US">bitstring.binstream(s
+[, start, end])</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">Dump
+string s into single line binary digit stream. Substring of s may be
+specified by start and end parameters. See substring parameters
+below.</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm; border-top: none; border-bottom: 1px solid #000000; border-left: none; border-right: none; padding-top: 0cm; padding-bottom: 0.07cm; padding-left: 0cm; padding-right: 0cm">
+<BR><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><BR><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Courier New, monospace"><FONT SIZE=4><SPAN LANG="en-US">bitstring.frombinstream(s
+[, start, end])<BR><FONT FACE="Times New Roman, serif">Convert
+hexadecimal stream of bytes to regular Lua string. Substring of s may
+be specified by start and end parameters. See substring parameters
+below.</FONT></SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm; border-top: none; border-bottom: 1px solid #000000; border-left: none; border-right: none; padding-top: 0cm; padding-bottom: 0.07cm; padding-left: 0cm; padding-right: 0cm">
+<BR><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=5><SPAN LANG="en-US"><BR>Format
+specification</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.44cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4>The
+format string passed to pack/unpack function consists of elements
+separated by a coma and optional white space. Each element specifies
+a value that is packed or unpacked, its size, type and endianess.
+These element parts are delimited by ':'. </FONT></FONT>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.44cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4>More
+formally </FONT></FONT>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.44cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4>format
+::= element | element-list</FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.44cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4>element
+::= size ':' type ':' [endianess] </FONT></FONT>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.44cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4>size
+::= number | all | rest</FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.44cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4>type
+::= int | bin</FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.44cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4>endianess
+::= big | little</FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.44cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4>element-list
+::= element element-delimiter element-list [ element-delimiter ]</FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.44cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4>element-delimiter
+::=  [' ' | '\t' | '\n' ] ',' [' ' | '\t' | '\n' ] </FONT></FONT>
+</P>
+<P ALIGN=LEFT STYLE="margin-left: 0.44cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4>Notes:</FONT></FONT></P>
+<UL>
+	<LI><P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><FONT SIZE=4>Order
+	of elements in format string specifies the order in which
+	corresponding parameters are packed. bitstring.pack(&ldquo;8:int,
+	8:int&rdquo;, 1, 2) will produce a &ldquo;\1\2&rdquo; binary string.</FONT></FONT></P>
+	<LI><P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><FONT SIZE=4>The
+	default endianess is big (network byte order). It may be omitted
+	from format specification. bitstring.pack(&ldquo;16:int&rdquo;,
+	0x0a0b&rdquo;) bitstring.pack(&ldquo;16:int:big&rdquo;, 0x0a0b) will
+	both produce binary string &ldquo;\10\11&rdquo;.</FONT></FONT></P>
+</UL>
+<UL>
+	<LI><P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><FONT SIZE=4>Little
+	endianess is not allowed for incomplete bytes as it would introduce
+	size irregularities. for example &ldquo;9:int:little&rdquo; for
+	0x01ff would be ff01 which is &ldquo;16:int:little&rdquo;</FONT></FONT></P>
+	<LI><P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><FONT SIZE=4>Sizes
+	for integer values are in bits and for binary strings are in bytes.
+	A more flexible choice would be to follow Erlang model where each
+	element has an optional part to specify multiplicity in bits of the
+	the size part. So for an integer &ldquo;9:int:big:1&rdquo; would
+	mean 9 bits and for a binary &ldquo;3:bin:big:8&rdquo; would mean 24
+	bits or 3 bytes. This may be useful in some scenarios that I am
+	unaware of. Not adding this flexibility somewhat simplifies the
+	interface and implementation.</FONT></FONT></P>
+	<LI><P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">There
+	may be trailing delimiters at the end of format string to ease
+	automated creation of programs that use bitstring.</SPAN></FONT></FONT></P>
+</UL>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=5><SPAN LANG="en-US">Substring
+parameters</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">Substring
+parameters allow to handle different parts of the same string
+parameter in consecutive invocations thus making most parsing tasks
+more efficient. Substring parameters specify substring that starts at
+start and ends at end inclusively. Parameters may be negative. 1, -1
+specify the whole string. Substring parameters behave similarly to
+string.sub parameters, however, it is illegal for start or end to be
+out of bounds.     <BR></SPAN></FONT></FONT></FONT><BR><BR>
+</P>
+</BODY>
+</HTML>
