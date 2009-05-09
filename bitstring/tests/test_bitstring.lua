@@ -219,7 +219,8 @@ local peap_example = function()
     local peap_message = bitstring.fromhexstream(peap_message_hex_stream)
 
     local code, identifier, length, eap_type, rest = 
-        bitstring.unpack([[8:int, 
+        bitstring.unpack([[
+        8:int, 
         8:int, 16:int, 8:int, rest:bin]], peap_message)
     assert(code == EAP_REQUEST)
     assert(eap_type == EAP_TYPE_PEAP)
@@ -332,25 +333,61 @@ local test26 = function()
     end
 end
 
+local test27 = function()
+    local test = function(format)
+        for num = 0.0, 359.9, 0.1 do
+            local val = math.sin(num)
+            local result = bitstring.pack(format, val)
+            local unpacked_val = bitstring.unpack(format, result)
+            test_helpers.assert_float_equal(unpacked_val, val, 0.000001)
+        end
+    end
 
+    test("32:float")
+    test("64:float")
+end
 
+local test28 = function()
+    local test = function(elem_size, count)
+        local format = string.rep(elem_size .. ":float,", count)
+        local values = {}
+        for num = 1, count do
+            table.insert(values, math.sin(num))
+        end
+        local result = bitstring.pack(format, unpack(values))
+        local unpacked_values = {bitstring.unpack(format, result)}
+        for i = 1, count do
+            test_helpers.assert_float_equal(unpacked_values[i], values[i], 0.000001)
+        end
+    end
 
--- test more format arguments then actual arguments 
--- test unpack empty string
--- test less format arguments then actual arguments 
--- test sum of bits is not % 8
--- test unpack has more bits then input
--- test all or rest with bits % CHAR_BIT != 0
--- add memory leak test
--- add profiling test
--- test multiline format string
--- test very long tokens
--- example of loop
+    test(32, 1024 * 7)
+    test(64, 1024 * 7)
+end
 
+local test29 = function()
+    test_helpers.assert_throw(
+    function()
+        bitstring.pack("8:int, 8:int, 8:int", 1, 2)
+    end,
+    "number expected")
 
+    test_helpers.assert_throw(
+    function()
+        bitstring.pack("8:" .. string.rep("A", 1024), 1)
+    end,
+    "wrong format")
+
+    test_helpers.assert_equal(
+        "\1\2",
+        bitstring.pack("8:int, 8:int", 1, 2, 3))
+end
 
 local run_tests = function()
     test_helpers.disable_print()
+    test_helpers.run_test("test29", test29)
+    test_helpers.run_test("test28", test28)
+    test_helpers.run_test("test27", test27)
     test_helpers.run_test("test26", test26)
     test_helpers.run_test("test25", test25)
     test_helpers.run_test("test24", test24)

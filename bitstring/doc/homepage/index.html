@@ -5,7 +5,7 @@
 	<TITLE></TITLE>
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.0  (Win32)">
 	<META NAME="CREATED" CONTENT="20090426;7275700">
-	<META NAME="CHANGED" CONTENT="20090504;5280000">
+	<META NAME="CHANGED" CONTENT="20090504;20275300">
 	<META NAME="Info 1" CONTENT="">
 	<META NAME="Info 2" CONTENT="">
 	<META NAME="Info 3" CONTENT="">
@@ -23,8 +23,7 @@ ease implementation of and experimentation with binary protocols from
 Lua - especially protocols based on bits. The bitstring library
 doesn't need any modification of Lua syntax. It is released under the
 flexible BSD license and is freely available from
-<A HREF="http://luaforge.net/projects/bitstring/" NAME="bitstring main">http://luaforge.net/projects/bitstring/</A><BR><BR>
-</SPAN></FONT><FONT FACE="Times New Roman, serif"><FONT SIZE=5><SPAN LANG="en-US">Example</SPAN></FONT></FONT></FONT></P>
+<A HREF="http://luaforge.net/projects/bitstring/" NAME="bitstring main">http://luaforge.net/projects/bitstring/</A><BR><BR></SPAN></FONT><FONT FACE="Times New Roman, serif"><FONT SIZE=5><SPAN LANG="en-US">Example</SPAN></FONT></FONT></FONT></P>
 <P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT COLOR="#004586"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">--
 This example demonstrates extraction and setting of bits in EAP-TLS
 message<BR>-- EAP-TLS protocol defined in RFC 2716<BR></SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">code,
@@ -35,8 +34,8 @@ eap_tls_message);<BR><BR>composed_eap_tls_message =
 bitstring.pack(<BR></SPAN></FONT><FONT COLOR="#c5000b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">&quot;8:int,
 8:int, 16:int:big, 8:int, 1:int, 1:int, 1:int, 5:int&quot;</SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">,
 <BR>code, identifier, length, eap_type, L_bit, M_bit, S_bit, R_bits)</SPAN></FONT></FONT></P>
-<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">See
-complete example bellow. </SPAN></FONT></FONT>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">See
+complete example bellow. </SPAN></FONT>
 </P>
 <P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT FACE="Times New Roman, serif"><FONT SIZE=5><SPAN LANG="en-US">Development
 Status</SPAN></FONT></FONT><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US"><BR>The
@@ -70,16 +69,16 @@ detailed description see bitstring reference</SPAN></FONT></A></FONT></P>
 work</SPAN></FONT></FONT><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US"><BR>bitlib
 - small and elegant library for bitwise operations
 <A HREF="http://luaforge.net/projects/bitlib">http://luaforge.net/projects/bitlib</A></SPAN></FONT></FONT></P>
-<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US"><BR></SPAN></FONT><FONT FACE="Times New Roman, serif"><FONT SIZE=5><SPAN LANG="en-US">More
-examples</SPAN></FONT></FONT><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US"><BR></SPAN></FONT><FONT FACE="Times New Roman, serif"><FONT SIZE=4 STYLE="font-size: 16pt"><SPAN LANG="en-US">RADIUS
-message parser and composer</SPAN></FONT></FONT><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US"><BR><BR></SPAN></FONT><FONT COLOR="#004586"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">--
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US"><BR></SPAN><FONT SIZE=5><SPAN LANG="en-US">More
+examples</SPAN></FONT><SPAN LANG="en-US"><BR></SPAN><FONT SIZE=4 STYLE="font-size: 16pt"><SPAN LANG="en-US">RADIUS
+message parser and composer</SPAN></FONT><SPAN LANG="en-US"><BR><BR></SPAN><FONT COLOR="#004586"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">--
 parse-radius.lua <BR>-- This example demonstrates parsing and
 creation of RADIUS protocol messages<BR>-- using bitstring.pack and
 bitstring.unpack. It also uses bitstring.hexstream<BR>-- and
 bitstring.fromhexstream utility functions that ease on debugging.<BR>--
 RADIUS protocol is defined in RFC 2865.<BR>--
----------------------------------------<BR></SPAN></SPAN></FONT></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">require</SPAN></SPAN></FONT></FONT><FONT FACE="Times New Roman, serif">
-</FONT><FONT COLOR="#c5000b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">&quot;bitstring&quot;</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal"><BR><BR></SPAN></SPAN></FONT><FONT COLOR="#004586"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">--
+---------------------------------------<BR></SPAN></SPAN></FONT></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">require</SPAN></SPAN></FONT></FONT>
+<FONT COLOR="#c5000b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">&quot;bitstring&quot;</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal"><BR><BR></SPAN></SPAN></FONT><FONT COLOR="#004586"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">--
 copied from wireshark</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal"><BR>packet
 =
 </SPAN></SPAN></FONT><FONT COLOR="#c5000b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">&quot;01e40088abe03a1b2b38bbd7edcf08b26334f417010867696f7261300c06000005781e10303034302e393661302e343931301f10303034302e393662312e653036330606000000015012efbdb1bd5e4fe4147a95a78d001c51844f0d0202000b0167696f7261303d06000000130506000044f504060a383e83200f63642d617031313230622d3031&quot;</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal"><BR><BR>radis_message
@@ -98,8 +97,8 @@ rest:bin&quot;</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><S
 attributes)<BR>&nbsp;&nbsp;&nbsp;&nbsp;</SPAN></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">table.insert</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">(attribute_list,
 {number = number, length = length, value = value})<BR></SPAN></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">end</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal"><BR><BR></SPAN></SPAN></FONT><FONT COLOR="#004586"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">--
 compose radius message</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal"><BR>attributes
-= {}<BR></SPAN></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">for</SPAN></SPAN></FONT></FONT><FONT FACE="Times New Roman, serif">
-</FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">i,
+= {}<BR></SPAN></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">for</SPAN></SPAN></FONT></FONT>
+<FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">i,
 a in </SPAN></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">ipairs</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">(attribute_list)
 do<BR>&nbsp;&nbsp;&nbsp;&nbsp;attribute = bitstring.pack(</SPAN></SPAN></FONT><FONT COLOR="#c5000b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">&quot;8:int,
 8:int, all:bin&quot;</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">,
@@ -119,8 +118,8 @@ identifier)<BR></SPAN></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier Ne
 message length: &quot;</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">,
 message_length)<BR></SPAN></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">print</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">(</SPAN></SPAN></FONT><FONT COLOR="#c5000b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">&quot;authenticator:
 &quot;</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">,
-bitstring.hexstream(authenticator))<BR></SPAN></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">print</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">(</SPAN></SPAN></FONT><FONT COLOR="#c5000b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">&quot;attributes:&quot;</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">)<BR><BR></SPAN></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">for</SPAN></SPAN></FONT></FONT><FONT FACE="Times New Roman, serif">
-</FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">i,
+bitstring.hexstream(authenticator))<BR></SPAN></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">print</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">(</SPAN></SPAN></FONT><FONT COLOR="#c5000b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">&quot;attributes:&quot;</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">)<BR><BR></SPAN></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">for</SPAN></SPAN></FONT></FONT>
+<FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">i,
 attribute in </SPAN></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">ipairs</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">(attribute_list)
 do<BR>&nbsp;&nbsp;&nbsp;&nbsp;</SPAN></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">print</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">(</SPAN></SPAN></FONT><FONT COLOR="#c5000b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">&quot;--------------------------------------&quot;</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">)<BR>&nbsp;&nbsp;&nbsp;&nbsp;</SPAN></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">print</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">(</SPAN></SPAN></FONT><FONT COLOR="#c5000b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">&quot;
 number: &quot;</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">,
@@ -131,12 +130,12 @@ value: &quot;</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SP
 bitstring.hexstream(attribute.value))<BR></SPAN></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">end</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal"><BR></SPAN></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">print</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">(</SPAN></SPAN></FONT><FONT COLOR="#c5000b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">&quot;--------------------------------------&quot;</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">)<BR><BR></SPAN></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">print</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">(</SPAN></SPAN></FONT><FONT COLOR="#c5000b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">&quot;composed
 radius
 message&quot;</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">)<BR></SPAN></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">print</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">(bitstring.hexstream(composed_radius_message))<BR></SPAN></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">assert</SPAN></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">(composed_radius_message
-== radis_message)</SPAN></SPAN></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><BR></SPAN></FONT><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US"><BR></SPAN></FONT><FONT FACE="Times New Roman, serif"><FONT SIZE=5><SPAN LANG="en-US">EAP-TLS
-message parser and composer</SPAN></FONT></FONT><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US"><BR><BR></SPAN></FONT><FONT COLOR="#004586"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">--
+== radis_message)</SPAN></SPAN></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><BR></SPAN></FONT><SPAN LANG="en-US"><BR></SPAN><FONT SIZE=5><SPAN LANG="en-US">EAP-TLS
+message parser and composer</SPAN></FONT><SPAN LANG="en-US"><BR><BR></SPAN><FONT COLOR="#004586"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">--
 parse-eap-tls.lua<BR>-- This example demonstrates extraction and
 setting of bits in EAP-TLS message<BR>-- EAP-TLS protocol defined in
-RFC 2716<BR></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><BR></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">require</SPAN></FONT></FONT><FONT FACE="Times New Roman, serif">
-</FONT><FONT COLOR="#c5000b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">&quot;bitstring&quot;</SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><BR><BR>packet
+RFC 2716<BR></SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><BR></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">require</SPAN></FONT></FONT>
+<FONT COLOR="#c5000b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">&quot;bitstring&quot;</SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><BR><BR>packet
 = </SPAN></FONT><FONT COLOR="#c5000b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">&quot;010000060d20&quot;</SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><BR><BR>eap_tls_message
 = bitstring.fromhexstream(packet)<BR><BR>code, identifier, length,
 eap_type, L_bit, M_bit, S_bit, R_bits = bitstring.unpack(<BR></SPAN></FONT><FONT COLOR="#c5000b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">&quot;8:int,
@@ -162,19 +161,24 @@ M_bit)<BR></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace
 S_bit)<BR></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">print</SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">(</SPAN></FONT><FONT COLOR="#c5000b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">&quot;R_bits:
 &quot;</SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">,
 R_bits)<BR><BR></SPAN></FONT><FONT COLOR="#006b6b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">assert</SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">(eap_tls_message
-== composed_eap_tls_message)</SPAN></FONT><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US"><BR><BR></SPAN></FONT><FONT FACE="Times New Roman, serif"><FONT SIZE=5><SPAN LANG="en-US">What's
-new</SPAN></FONT></FONT></FONT></P>
-<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">pre-alpha-0.1
-</SPAN></FONT></FONT></FONT>
+== composed_eap_tls_message)</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=5><SPAN LANG="en-US">Credits</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">Thanks
+to Slava Chernoy for suggesting the compile feature and reminding me
+again when I didn't implement it.</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=5><SPAN LANG="en-US">What's
+new</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">pre-alpha-0.1
+</SPAN></FONT></FONT>
 </P>
-<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">substring
-parameters &ndash; provide more efficient interface for parsing</SPAN></FONT></FONT></FONT></P>
-<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">bitstring.compile
-&ndash; interface to optimize processing of recurring bit patterns</SPAN></FONT></FONT></FONT></P>
-<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">optimize
-packing of well aligned binary strings</SPAN></FONT></FONT></FONT></P>
-<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">fixed
-bugs</SPAN></FONT></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">substring
+parameters &ndash; provide more efficient interface for parsing</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">bitstring.compile
+&ndash; interface to optimize processing of recurring bit patterns</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">optimize
+packing of well aligned binary strings</SPAN></FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">fixed
+bugs</SPAN></FONT></FONT></P>
 <P ALIGN=LEFT STYLE="margin-left: 0.4cm"><BR><BR>
 </P>
 </BODY>

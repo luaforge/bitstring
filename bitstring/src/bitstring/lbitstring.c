@@ -43,10 +43,12 @@
 typedef enum
 {
     ET_UNDEFINED = 0,
-    /* integer of up to lua_Integer * CHAR_BIT bits */
+    /* integer of up to sizeof(lua_Integer) * CHAR_BIT bits */
     ET_INTEGER,
     /* octet string. each octet may hold values of 0-255 */
     ET_BINARY,
+    /* floating point number of up to sizeof(lua_Number) * CHAR_BIT bits */
+    ET_FLOAT,
 } ELEMENT_TYPE;
 
 /* 
@@ -57,6 +59,7 @@ static const char *TYPES[] =
     "undefined",
     "int",
     "bin",
+    "float",
     NULL
 };
 
@@ -309,7 +312,7 @@ static lua_Integer clear_unused_bits(lua_Integer value, size_t used_bits)
 
 /*
  * name
- *      pack_int
+ *      basic_pack_int
  *
  * description
  *      pack integer into result buffer
@@ -328,7 +331,7 @@ static lua_Integer clear_unused_bits(lua_Integer value, size_t used_bits)
  *      The function splits handling into different cases of bit alignment in
  *      input and in result buffer. see comments in the body of the function
  */
-static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value, PACK_STATE *state)
+static void basic_pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value, PACK_STATE *state)
 {
     size_t count_packed_bits = elem->size;
     unsigned char val_buff[sizeof(lua_Integer) + 1];
@@ -337,11 +340,11 @@ static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value,
     /* change the endianess and explicitely represent the value as buffer of bytes */
     size_t count_bytes = 
         change_endianess(
-                          l, 
-                          clear_unused_bits(value, elem->size), 
-                          elem->size, elem->endianess, 
-                          val_buff, 
-                          sizeof(val_buff));
+                l, 
+                clear_unused_bits(value, elem->size), 
+                elem->size, elem->endianess, 
+                val_buff, 
+                sizeof(val_buff));
 
     /* number of least significant bits in the result buffer that are over byte bounds */
     size_t bit_offset = state->current_bit % CHAR_BIT;
@@ -478,6 +481,59 @@ static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer value,
     state->current_bit += count_packed_bits;
 }
 
+/*
+ * name
+ *      pack_int
+ *
+ * description
+ *      validate size and call basic_pack_int
+ *
+ * paramenters
+ *      l - lua state
+ *      elem - element description
+ *      value - value to pack
+ *      state - pack state and intermediate results that are passed between
+ *              invocations
+ *
+ * returns
+ *      the function collects the result in buffer member of state parameter
+ *
+ * throws
+ *      size error - element size exceeds lua_Integer size
+ */
+static void pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, PACK_STATE *state)
+{
+    lua_Integer value = luaL_checkinteger(l, arg_index);
+    if(elem->size > sizeof(lua_Integer) * CHAR_BIT)
+    {
+        luaL_error(l, 
+                "size error: argument %d size (%d bits) exceeds the lua_Integer size (%d bits)", 
+                arg_index, elem->size, sizeof(lua_Integer) * CHAR_BIT);
+    }
+    basic_pack_int(l, elem, value, state);
+}
+
+/*
+ * name
+ *      pack_aligned_bin
+ *
+ * description
+ *      optimize packing of binary strings in well aligned locations
+ *
+ * paramenters
+ *      l - lua state
+ *      elem - element description
+ *      value - value to pack
+ *      state - pack state and intermediate results that are passed between
+ *              invocations
+ *
+ * returns
+ *      the function collects the result in buffer member of state parameter
+ *
+ * rationale
+ *      optimize for many common use cases where binary strings are 
+ *      packed on byte bounds
+ */
 static void pack_aligned_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, const unsigned char *bin, size_t len, PACK_STATE *state)
 {
     size_t reminder = len;
@@ -507,7 +563,7 @@ static void pack_aligned_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, const unsi
 
 /*
  * name
- *      pack_bin
+ *      basic_pack_bin
  *
  * description
  *      pack binary into result buffer
@@ -528,10 +584,8 @@ static void pack_aligned_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, const unsi
  *      to allow packing strings of arbitrary length on arbitrary bit
  *      positions.
  *
- * future work
- *      optimize with memcpy for the most common usage pattern
  */
-static void pack_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, const unsigned char *bin, size_t len, PACK_STATE *state)
+static void basic_pack_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, const unsigned char *bin, size_t len, PACK_STATE *state)
 {
     if(state->current_bit % CHAR_BIT == 0)
     {
@@ -546,8 +600,104 @@ static void pack_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, const unsigned cha
             elem.size = CHAR_BIT;
             elem.endianess = EE_BIG;
             elem.type = ET_INTEGER; 
-            pack_int(l, &elem, bin[i], state);
+            basic_pack_int(l, &elem, bin[i], state);
         }
+    }
+}
+
+/*
+ * name
+ *      pack_bin
+ *
+ * description
+ *      validate size and call basic_pack_bin
+ *
+ * paramenters
+ *      l - lua state
+ *      elem - element description
+ *      bin - input binary string
+ *      len - input length
+ *      state - pack state and intermediate results that are passed between
+ *              invocations
+ *
+ * returns
+ *      the function collects the result in buffer member of state parameter
+ *
+ * throws
+ *      size error - element size exceeds input size for binary strings
+ */
+static void pack_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, PACK_STATE *state)
+{
+    size_t len = 0;
+    const unsigned char *bin = luaL_checklstring(l, arg_index, &len);
+    if(elem->size != ALL)
+    {
+        if(elem->size > len)
+        {
+            luaL_error(l, 
+                    "size error: argument %d size (%d bytes) exceeds the length of input stirng (%d bytes)", 
+                    arg_index, elem->size, len);
+        }
+        len = elem->size;
+    }
+
+    basic_pack_bin(l, elem, bin, len, state);
+}
+
+/*
+ * name
+ *      pack_float
+ *
+ * description
+ *      pack floating point number into result buffer
+ *
+ * paramenters
+ *      l - lua state
+ *      elem - element description
+ *      arg_index - number of element in format string. starts from 1 
+ *      arg - pack state and intermediate results that are passed between
+ *              invocations
+ *
+ * returns
+ *      the function collects the result in buffer member of state parameter
+ *
+ * throws
+ *      size error - element size is greater then sizeof lua_Number
+ *      size error - unsupported element size. currently only single (32 bit) 
+ *                   and double (64 bit) precision is supported
+ *
+ * future work
+ *      add half precision and other representation formats if somebody will
+ *      find it useful
+ */
+static void pack_float(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, PACK_STATE *state)
+{
+    lua_Number value = luaL_checknumber(l, arg_index);
+    if(elem->size > sizeof(lua_Number) * CHAR_BIT)
+    {
+        luaL_error(l, "size error: argument %d size (%d bits) exceeds the lua_Number size (%d bits)", 
+                arg_index, elem->size, sizeof(lua_Integer) * CHAR_BIT);
+    }
+
+    if(elem->endianess != EE_DEFAULT)
+    {
+        luaL_error(l, "wrong format: unsupported endianess in argument %d", arg_index);
+    }
+
+    if(elem->size == sizeof(float) * CHAR_BIT)
+    {
+        float tmp = value;
+        basic_pack_bin(l, elem, (unsigned char *)&tmp, sizeof(tmp), state);
+    }
+    else if(elem->size == sizeof(double) * CHAR_BIT)
+    {
+        double tmp = value;
+        basic_pack_bin(l, elem, (unsigned char *)&tmp, sizeof(tmp), state);
+    }
+    else
+    {
+        luaL_error(l, "size error: unsupported size %d for argument %d", 
+                elem->size, arg_index);
     }
 }
 
@@ -570,8 +720,6 @@ static void pack_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, const unsigned cha
  *
  * throws
  *      size error - element size is zero
- *      size error - element size exceeds lua_Integer size
- *      size error - element size exceeds input size for binary strings
  *      wrong format - unknown input type
  *
  * future work
@@ -587,28 +735,15 @@ static void pack_elem(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, vo
     PACK_STATE *state = (PACK_STATE *)arg;
     if(elem->type == ET_INTEGER)
     {
-        lua_Integer value = luaL_checkinteger(l, arg_index);
-        if(elem->size > sizeof(lua_Integer) * CHAR_BIT)
-        {
-            luaL_error(l, "size error: argument %d size (%d bits) exceeds the lua_Integer size (%d bits)", 
-                    arg_index, elem->size, sizeof(lua_Integer) * CHAR_BIT);
-        }
-        pack_int(l, elem, value, state);
+        pack_int(l, elem, arg_index, state);
     }
     else if(elem->type == ET_BINARY)
     {
-        size_t len = 0;
-        const unsigned char *bin = luaL_checklstring(l, arg_index, &len);
-        if(elem->size != ALL)
-        {
-            if(elem->size > len)
-            {
-                luaL_error(l, "size error: argument %d size (%d bytes) exceeds the length of input stirng (%d bytes)", 
-                        arg_index, elem->size, len);
-            }
-            len = elem->size;
-        }
-        pack_bin(l, elem, bin, len, state);
+       pack_bin(l, elem, arg_index, state);
+    }
+    else if(elem->type == ET_FLOAT)
+    {
+       pack_float(l, elem, arg_index, state);
     }
     else
     {
@@ -903,6 +1038,62 @@ static void unpack_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, U
 
 /*
  * name
+ *      unpack_float
+ *
+ * description
+ *      unpack floating point number from input buffer and push it onto lua stack. 
+ *      update the number of return values
+ *
+ * paramenters
+ *      l - lua state
+ *      elem - element description
+ *      arg_index - number of element in format string. starts from 1 
+ *      state - unpack state passed between invocations
+ *
+ * throws
+ *      size error - requested length is greater then remaining part of input
+ *      size error - unsupported float size
+ *
+ * future work
+ *      add support for different architectures
+ */
+static void unpack_float(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, UNPACK_STATE *state)
+{
+    if(elem->size > state->source_bits)
+    {
+        luaL_error(l, "size error: requested length for element %d is greater then remaining part of input", arg_index);
+    }
+
+    unsigned char buff[elem->size / CHAR_BIT];
+    size_t i;
+    for(i = 0; i < sizeof(buff); ++i)
+    {
+        ELEMENT_DESCRIPTION tmp_elem;
+        tmp_elem.size = CHAR_BIT;
+        tmp_elem.endianess = EE_BIG;
+        tmp_elem.type = ET_INTEGER; 
+        buff[i] = unpack_int_no_push(l, &tmp_elem, arg_index, state);
+    }
+
+    grow_unpack_stack(l, state);
+    if(elem->size == sizeof(float) * CHAR_BIT)
+    {
+        lua_pushnumber(l, *(float *)buff);
+    }
+    else if(elem->size == sizeof(double) * CHAR_BIT)
+    {
+        lua_pushnumber(l, *(double *)buff);
+    }
+    else
+    {
+        luaL_error(l, "size error: unsupported float size %d", elem->size);
+    }
+    ++state->return_count;
+}
+
+
+/*
+ * name
  *      unpack_elem
  *
  * description
@@ -931,6 +1122,10 @@ static void unpack_elem(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, 
     {
         unpack_bin(l, elem, arg_index, state);
     }
+    else if(elem->type == ET_FLOAT)
+    {
+        unpack_float(l, elem, arg_index, state);
+    }
     else
     {
         luaL_error(l, "wrong format: unexpected type %d", elem->type);
@@ -950,7 +1145,7 @@ static void unpack_elem(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, 
  *      token - token obtained from parsing the format string
  *      len - length of the token
  */
-int compare_token(const char *keyword, const char *token, size_t len)
+static int compare_token(const char *keyword, const char *token, size_t len)
 {
     if(strlen(keyword) == len && memcmp(keyword, token, len) == 0)
     {

@@ -56,6 +56,15 @@ local assert_equal = function(result, expected)
     assert(result == expected)
  end
 
+local assert_float_equal = function(result, expected, precision)
+    my_print("expected")
+    my_print(string.format("%f", expected))
+    my_print("result")
+    my_print(string.format("%f", result))
+    assert(math.abs(result - expected) < precision)
+end
+
+
 local assert_tables_equal = function(result, expected)
     for k, v in ipairs(result) do
         assert_equal(result[k], expected[k])
@@ -72,6 +81,7 @@ end
 module("test_helpers", package.seeall)
 test_helpers.run_test = run_test
 test_helpers.assert_equal = assert_equal
+test_helpers.assert_float_equal = assert_float_equal
 test_helpers.assert_tables_equal = assert_tables_equal
 test_helpers.assert_throw = assert_throw
 test_helpers.run_pack_unpack_test = run_pack_unpack_test
