@@ -5,7 +5,7 @@
 	<TITLE></TITLE>
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.0  (Win32)">
 	<META NAME="CREATED" CONTENT="20090426;7275700">
-	<META NAME="CHANGED" CONTENT="20090503;22381000">
+	<META NAME="CHANGED" CONTENT="20090509;13545500">
 	<META NAME="Info 1" CONTENT="">
 	<META NAME="Info 2" CONTENT="">
 	<META NAME="Info 3" CONTENT="">
@@ -150,13 +150,13 @@ formally </FONT></FONT>
 <P ALIGN=LEFT STYLE="margin-left: 0.44cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4>size
 ::= number | all | rest</FONT></FONT></P>
 <P ALIGN=LEFT STYLE="margin-left: 0.44cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4>type
-::= int | bin</FONT></FONT></P>
+::= int | bin | <SPAN LANG="en-US">float</SPAN></FONT></FONT></P>
 <P ALIGN=LEFT STYLE="margin-left: 0.44cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4>endianess
 ::= big | little</FONT></FONT></P>
 <P ALIGN=LEFT STYLE="margin-left: 0.44cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4>element-list
 ::= element element-delimiter element-list [ element-delimiter ]</FONT></FONT></P>
 <P ALIGN=LEFT STYLE="margin-left: 0.44cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4>element-delimiter
-::=  [' ' | '\t' | '\n' ] ',' [' ' | '\t' | '\n' ] </FONT></FONT>
+::= [' ' | '\t' | '\n' ] ',' [' ' | '\t' | '\n' ] </FONT></FONT>
 </P>
 <P ALIGN=LEFT STYLE="margin-left: 0.44cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4>Notes:</FONT></FONT></P>
 <UL>
@@ -187,17 +187,25 @@ formally </FONT></FONT>
 	<LI><P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">There
 	may be trailing delimiters at the end of format string to ease
 	automated creation of programs that use bitstring.</SPAN></FONT></FONT></P>
+	<LI><P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">Floating
+	point support is based on underlying C implementation of float and
+	double and the definition of lua_Number. Allowed sizes are 32 for
+	single precision and 64 for double precision numbers. Current
+	implementation is not expected to be portable to different
+	architectures. If half precision is needed or there is a need of
+	support for different floating point representations please start a
+	discussion on <A HREF="http://luaforge.net/projects/bitstring/" NAME="bitstring">http://luaforge.net/projects/bitstring/</A></SPAN></FONT></FONT></P>
 </UL>
 <P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=5><SPAN LANG="en-US">Substring
 parameters</SPAN></FONT></FONT></P>
-<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">Substring
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">Substring
 parameters allow to handle different parts of the same string
 parameter in consecutive invocations thus making most parsing tasks
 more efficient. Substring parameters specify substring that starts at
 start and ends at end inclusively. Parameters may be negative. 1, -1
 specify the whole string. Substring parameters behave similarly to
 string.sub parameters, however, it is illegal for start or end to be
-out of bounds.     <BR></SPAN></FONT></FONT></FONT><BR><BR>
+out of bounds. <BR></SPAN></FONT></FONT><BR><BR>
 </P>
 </BODY>
 </HTML>
