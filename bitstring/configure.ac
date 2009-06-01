@@ -17,6 +17,9 @@ AC_PROG_INSTALL
 AC_OUTPUT(
           [Makefile
           doc/Makefile
+          win32/Makefile
+          win32/bitstring/Makefile
+          win32/bitstring/bitstring/Makefile
           src/Makefile
           src/bitstring/Makefile
           tests/Makefile])

@@ -1,2 +1,2 @@
-SUBDIRS = src tests doc
+SUBDIRS = src tests doc win32
 
