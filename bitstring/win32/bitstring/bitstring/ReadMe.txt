@@ -40,8 +40,6 @@ should add to or customize.
 
 /////////////////////////////////////////////////////////////////////////////
 
-get and install Lua for Windows from http://luaforwindows.luaforge.net/
-get and install free Microsoft Visual C++ 2008 Express Edition from Microsoft
 
 
 

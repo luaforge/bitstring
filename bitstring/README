@@ -32,6 +32,25 @@ for example
 
     $ ./configure --libdir=/usr/local/lib/lua/5.1/ 
 
+4.1 Installation from source on win32
+
+- get and install Lua for Windows from http://luaforwindows.luaforge.net/
+- verify that LUA_DEV environment variable is set
+  on my computer it is set to C:\Program Files\Lua\5.1\
+- get and install free Microsoft Visual C++ 2008 Express Edition from Microsoft
+- copy the product dll into the clibs directory of lua for windows. 
+  on my computer it is in C:\Program Files\Lua\5.1\clibs\
+
+win32 build uses stdint.h Copyright (c) 2006-2008 Alexander Chemeris. 
+Please see the copyright notice in ./win32/bitstring/bitstring/stdint.h
+
+4.2 Installation from binary package on win32
+- copy the bitstring.dll into the clibs directory of lua for windows. 
+  on my computer it is in C:\Program Files\Lua\5.1\clibs\
+
+win32 build uses stdint.h Copyright (c) 2006-2008 Alexander Chemeris. 
+Please see the copyright notice in ./win32/bitstring/bitstring/stdint.h
+
 5. Library functions
 Verify that bitstring is on LUA_CPATH and 
 
