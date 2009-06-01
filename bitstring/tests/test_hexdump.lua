@@ -2,6 +2,8 @@ require "os"
 require "test_helpers"
 require "bitstring"
 
+print = function(...) end
+
 local test1 = function()
     local expected = 
 [[00000000: 00 01 02 03 04 05 06 07   08 09 0a 0b 0c 0d 0e 0f     ................
@@ -140,7 +142,6 @@ end
 
 
 local run_tests = function()
-    test_helpers.disable_print()
     test_helpers.run_test("test9", test9)
     test_helpers.run_test("test8", test8)
     test_helpers.run_test("test7", test7)

@@ -2,6 +2,8 @@ require "os"
 require "bitstring"
 require "test_helpers"
 
+print = function(...) end
+
 local test2 = function()
     local expected = "\1\2\1\4\3\2\1hello"
     local packed_values = {0x1, 0x0102, 0x01020304, "hello"}
@@ -235,7 +237,6 @@ end
 
 
 local run_tests = function()
-    test_helpers.disable_print()
     test_helpers.run_test("test24", test24)
     test_helpers.run_test("test21", test21)
     test_helpers.run_test("test20", test20)

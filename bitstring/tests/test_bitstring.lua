@@ -2,6 +2,8 @@ require "os"
 require "bitstring"
 require "test_helpers"
 
+print = function(...) end
+
 local test1 = function()
     test_helpers.assert_throw(function() bitstring.pack() end, "bad argument #1 to 'pack' (bitstring.bitmatch or string expected, got no value)")
     test_helpers.assert_throw(function() bitstring.unpack("8:bin") end, "bad argument #2 to 'unpack' (string expected, got no value)")
@@ -224,7 +226,7 @@ local peap_example = function()
         8:int, 16:int, 8:int, rest:bin]], peap_message)
     assert(code == EAP_REQUEST)
     assert(eap_type == EAP_TYPE_PEAP)
-    test_helpers.my_print("received peap message")
+    print("received peap message")
 
     local length_bit, more_bit, start_bit, reserved_bits, version, rest = 
         bitstring.unpack("1:int, 1:int, 1:int, 3:int, 2:int, rest:bin", rest)
@@ -235,19 +237,19 @@ local peap_example = function()
     end
 
     if peap_length ~= nil then
-        test_helpers.my_print("total peap message length: ", peap_length)
+        print("total peap message length: ", peap_length)
     end
 
     if more_bit == 1 then
-        test_helpers.my_print("more fragments will follow, current fragment length: ", #rest)
+        print("more fragments will follow, current fragment length: ", #rest)
     end
 
     if version == 0 then
-        test_helpers.my_print("this is microsoft protocol version")
+        print("this is microsoft protocol version")
     elseif version == 1 then
-        test_helpers.my_print("this is cisco protocol version")
+        print("this is cisco protocol version")
     else
-        test_helpers.my_print("error: unknown version")
+        print("error: unknown version")
     end
 end
 
@@ -384,7 +386,6 @@ local test29 = function()
 end
 
 local run_tests = function()
-    test_helpers.disable_print()
     test_helpers.run_test("test29", test29)
     test_helpers.run_test("test28", test28)
     test_helpers.run_test("test27", test27)

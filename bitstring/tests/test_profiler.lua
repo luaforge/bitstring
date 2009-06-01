@@ -1,6 +1,8 @@
 require "bitstring"
 require "os"
 
+print = function(...) end
+
 -- well aligned binary
 local test1_input = string.rep("A", 1024 * 16)
 local test1 = function()

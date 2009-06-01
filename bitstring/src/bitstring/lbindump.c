@@ -1,3 +1,30 @@
+/* 
+ * Copyright (c) 2009, Giora Kosoi
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the project nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY Giora Kosoi ''AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL Giora Kosoi BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #define BIN_BYTES_IN_ROW 4
 #define BIN_BYTES_FROM_TEXT_WIDTH 4
 #define BIN_OFFSET_WIDTH 10
@@ -88,13 +115,13 @@ static int l_bindump(lua_State *l)
     size_t i = 0;
     while(i < len)
     {
-        unsigned char *result = luaL_prepbuffer(&b);
+        unsigned char *result = (unsigned char *)luaL_prepbuffer(&b);
         memset(result, 'X', LUAL_BUFFERSIZE);
         size_t column = 0;
         while(i < len && column < LUAL_BUFFERSIZE - BIN_PRINTED_LINE_LENGTH)
         {
             size_t line_start = i;
-            sprintf(result + column, "%08x: ", line_start);
+            sprintf((char *)(result + column), "%08x: ", line_start);
             column += BIN_OFFSET_WIDTH;
             size_t k = 0;
             while(k < BIN_BYTES_IN_ROW && i < len)
@@ -113,8 +140,8 @@ static int l_bindump(lua_State *l)
             k = 0;
             while(line_start + k < len && k < BIN_BYTES_IN_ROW)
             {
-                char ch = input[line_start + k];
-                result[column] = isprint(ch) ? ch : '.';
+                unsigned char ch = input[line_start + k];
+	            result[column] = isprint(ch) ? ch : '.';
                 ++k; ++column;
             }
             result[column] = '\n';
@@ -137,7 +164,7 @@ static int l_binstream(lua_State *l)
     size_t i = 0;
     while(i < len)
     {
-        unsigned char *result = luaL_prepbuffer(&b);
+        unsigned char *result = (unsigned char *)luaL_prepbuffer(&b);
         size_t column = 0;
         while(i < len && column < LUAL_BUFFERSIZE - 8)
         {
@@ -167,7 +194,7 @@ static int l_frombinstream(lua_State *l)
     size_t i = 0;
     while(i < len)
     {
-        unsigned char *result = luaL_prepbuffer(&b);
+        unsigned char *result = (unsigned char *)luaL_prepbuffer(&b);
         unsigned char *current_byte = result;
         unsigned char *result_end = result + LUAL_BUFFERSIZE;
         while(i < len && current_byte < result_end)

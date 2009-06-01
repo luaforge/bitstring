@@ -25,18 +25,36 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef WIN32
 #include "config.h"
-
-#include <lua.h>
-#include <lauxlib.h>
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <string.h>
-#include <stdint.h>
+
+#include <ctype.h>
 #include <errno.h>
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif // __cplusplus
+#include <lua.h>
+#include <lauxlib.h>
+#ifdef __cplusplus
+}
+#endif // __cplusplus
+
+
+#include <stdint.h>
+
+
+
+#ifdef WIN32
+#pragma warning(disable : 4996)
+#endif // WIN32
 /*
  * Element types
  */
@@ -271,7 +289,7 @@ static size_t change_endianess(
 
     size_t count_bytes = bits_to_bytes(count_bits);
 
-    int i;
+    size_t i;
     for(i = 0; i < count_bytes; ++i)
     {
         if(endianess == EE_BIG || endianess == EE_DEFAULT)
@@ -368,7 +386,7 @@ static void basic_pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer 
         unsigned char tmp = *current_byte;
         luaL_addsize(state->buffer, size);
 
-        state->prep_buffer = luaL_prepbuffer(state->buffer);
+        state->prep_buffer = (unsigned char *)luaL_prepbuffer(state->buffer);
         state->current_bit = bit_offset;
         current_byte = state->prep_buffer;
         *current_byte = tmp;
@@ -377,7 +395,7 @@ static void basic_pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer 
     if(bit_offset == 0 && source_bit_offset == 0)
     {
         /* simple copy */
-        int i;
+        size_t i;
         for(i = 0; i < count_bytes; ++i)
         {
             *current_byte = val_buff[i];
@@ -394,7 +412,7 @@ static void basic_pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer 
         /* moved left and ORed with result buffer */
         /* uuuu uuuu uuu0 0000 */ 
          
-        int i;
+        size_t i;
         for(i = 0; i < count_bytes - 1; ++i)
         {
             *current_byte = (val_buff[i] << (CHAR_BIT - source_bit_offset)) & 0xff;
@@ -412,7 +430,7 @@ static void basic_pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer 
         /* uuuu uuuu  uuuu uuuu */ 
         /* moved right and ORed with result buffer */
         /* 000u uuuu uuuu  uuuu uuu0 0000 */ 
-         int i;
+        size_t i;
         unsigned char tmp = 0;
         for(i = 0; i < count_bytes; ++i)
         {
@@ -434,7 +452,7 @@ static void basic_pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer 
 
             bit_gap = abs(bit_gap);
             /* move right */
-            int i;
+            size_t i;
             unsigned char tmp = 0;
             for(i = 0; i < count_bytes; ++i)
             {
@@ -452,7 +470,7 @@ static void basic_pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer 
             /* input value in a char buffer */
             /* 0000 uuuu  uuuu uuuu */ 
 
-            int i;
+            size_t i;
             for(i = 0; i < count_bytes - 1; ++i)
             {
                 *current_byte |= (val_buff[i] << bit_gap) & 0xff;
@@ -469,7 +487,7 @@ static void basic_pack_int(lua_State *l, ELEMENT_DESCRIPTION *elem, lua_Integer 
             /* input value in a char buffer */
             /* 000u uuuu  uuuu uuuu */ 
 
-            int i;
+            size_t i;
             for(i = 0; i < count_bytes; ++i)
             {
                 *current_byte |= val_buff[i];
@@ -551,7 +569,7 @@ static void pack_aligned_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, const unsi
             size_t size = current_byte - state->prep_buffer;
             luaL_addsize(state->buffer, size);
 
-            state->prep_buffer = luaL_prepbuffer(state->buffer);
+            state->prep_buffer = (unsigned char *)luaL_prepbuffer(state->buffer);
             current_byte = state->prep_buffer;
             size_t space = reminder <= LUAL_BUFFERSIZE ? reminder : LUAL_BUFFERSIZE;
             memcpy(current_byte, bin, space);
@@ -629,7 +647,7 @@ static void basic_pack_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, const unsign
 static void pack_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, PACK_STATE *state)
 {
     size_t len = 0;
-    const unsigned char *bin = luaL_checklstring(l, arg_index, &len);
+    const unsigned char *bin = (const unsigned char *)luaL_checklstring(l, arg_index, &len);
     if(elem->size != ALL)
     {
         if(elem->size > len)
@@ -686,7 +704,7 @@ static void pack_float(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, P
 
     if(elem->size == sizeof(float) * CHAR_BIT)
     {
-        float tmp = value;
+        float tmp = (float)value;
         basic_pack_bin(l, elem, (unsigned char *)&tmp, sizeof(tmp), state);
     }
     else if(elem->size == sizeof(double) * CHAR_BIT)
@@ -804,7 +822,7 @@ static lua_Integer toint(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index,
     }
     else if(elem->endianess == EE_LITTLE)
     {
-        int i;
+        size_t i;
         for(i = 0; i < buffer_len; ++i)
         {
             size_t shift = i * CHAR_BIT;
@@ -884,9 +902,9 @@ static lua_Integer unpack_int_no_push(lua_State *l, ELEMENT_DESCRIPTION *elem, i
         /* input buffer p - processed bits, u - unprocessed bits*/
         /* pppp pppp  pppp pppp uuuu uuuu uuuu uuuu */
         size_t bytes_to_copy = elem->size / CHAR_BIT;
-        unsigned char result_buffer[bytes_to_copy];
+        unsigned char result_buffer[255];
         memcpy(result_buffer, current_byte, bytes_to_copy);
-        result = toint(l, elem, arg_index, result_buffer, sizeof(result_buffer)); 
+        result = toint(l, elem, arg_index, result_buffer, bytes_to_copy); 
     }
     else
     {
@@ -895,7 +913,7 @@ static lua_Integer unpack_int_no_push(lua_State *l, ELEMENT_DESCRIPTION *elem, i
         const unsigned char *end_byte = state->source + end_bit / CHAR_BIT;
 
         size_t bytes_to_copy = bits_to_bytes(elem->size);
-        unsigned char result_buffer[bytes_to_copy];
+        unsigned char result_buffer[255];
         memset(result_buffer, 0, bytes_to_copy);
 
         /* copy bits to result_buffer while adjusting on byte bounds */
@@ -914,7 +932,7 @@ static lua_Integer unpack_int_no_push(lua_State *l, ELEMENT_DESCRIPTION *elem, i
             result_buffer[0] |= (*end_byte >> right_shift) & 0xff; 
         }
 
-        result = toint(l, elem, arg_index, result_buffer, sizeof(result_buffer)); 
+        result = toint(l, elem, arg_index, result_buffer, bytes_to_copy); 
         result = clear_unused_bits(result, elem->size);
     }
     state->current_bit += elem->size;
@@ -1017,7 +1035,7 @@ static void unpack_bin(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index, U
     size_t i = 0;
     while(i < elem->size)
     {
-        unsigned char *result = luaL_prepbuffer(&b);
+        unsigned char *result = (unsigned char *)luaL_prepbuffer(&b);
         size_t j = 0;
         while(i < elem->size && j < LUAL_BUFFERSIZE)
         {
@@ -1064,9 +1082,10 @@ static void unpack_float(lua_State *l, ELEMENT_DESCRIPTION *elem, int arg_index,
         luaL_error(l, "size error: requested length for element %d is greater then remaining part of input", arg_index);
     }
 
-    unsigned char buff[elem->size / CHAR_BIT];
+	size_t float_size = elem->size / CHAR_BIT;
+    unsigned char buff[255];
     size_t i;
-    for(i = 0; i < sizeof(buff); ++i)
+    for(i = 0; i < float_size; ++i)
     {
         ELEMENT_DESCRIPTION tmp_elem;
         tmp_elem.size = CHAR_BIT;
@@ -1173,11 +1192,11 @@ static ELEMENT_TYPE totype(lua_State *l, const char *token, size_t token_len)
     {
         if(compare_token(TYPES[i], token, token_len))
         {
-            return i;
+            return (ELEMENT_TYPE)i;
         } 
         ++i;
     }
-    return luaL_error(l, "wrong format: unexpected type token (%s)", token); 
+    return (ELEMENT_TYPE)luaL_error(l, "wrong format: unexpected type token (%s)", token); 
 }
 
 /*
@@ -1199,11 +1218,11 @@ static ELEMENT_ENDIANESS toendianess(lua_State *l, const char *token, size_t tok
     {
         if(compare_token(ENDIANESSES[i], token, token_len))
         {
-            return i;
+            return (ELEMENT_ENDIANESS)i;
         } 
         ++i;
     }
-    return luaL_error(l, "wrong format: unexpected endianess token (%s)", token); 
+    return (ELEMENT_ENDIANESS)luaL_error(l, "wrong format: unexpected endianess token (%s)", token); 
 }
 
 /*
@@ -1282,7 +1301,7 @@ static void parse_format(lua_State *l, ELEM_HANDLER handler, void *arg)
     /* allow leading space */
     PARSE_STATE state = SPACE_STATE;
     int argnum = 2;
-    int i = 0;
+    size_t i = 0;
     while(i < len)
     {
         switch(state)
@@ -1455,7 +1474,12 @@ static void parse(lua_State *l, ELEM_HANDLER handler, void *arg)
     else
     {
         char message[255];
-        snprintf(message, sizeof(message), 
+#ifdef WIN32
+        _snprintf_s(
+#else
+		snprintf(
+#endif
+			message, sizeof(message), 
                 "bitstring.bitmatch or string expected, got %s",
                 lua_typename(l, lua_type(l, 1)));
         message[sizeof(message) - 1] = '\0';
@@ -1498,7 +1522,7 @@ static const unsigned char *get_substring(
         int end_param)
 {
     size_t original_length = 0;
-    const unsigned char *original_start = luaL_checklstring(l, string_param, &original_length); 
+    const unsigned char *original_start = (const unsigned char *)luaL_checklstring(l, string_param, &original_length); 
 
     /* Lua style */
     int start_position = 1;
@@ -1569,7 +1593,7 @@ static int l_pack(lua_State *l)
 
     PACK_STATE state;
     state.buffer = &b;
-    state.prep_buffer = luaL_prepbuffer(&b);
+    state.prep_buffer = (unsigned char *)luaL_prepbuffer(&b);
     state.current_bit = 0;
     state.result_bits = LUAL_BUFFERSIZE * CHAR_BIT;
 
@@ -1769,7 +1793,11 @@ static void init_bitmatch_type(lua_State *l)
  * returns
  *      number of return values
  */
+#ifdef WIN32
+extern "C" __declspec(dllexport) int luaopen_bitstring(lua_State *l) 
+#else
 int luaopen_bitstring(lua_State *l) 
+#endif
 {
     init_bitmatch_type(l);
     luaL_openlib(l, "bitstring", bitstring, 0);
