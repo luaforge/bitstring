@@ -5,7 +5,7 @@
 	<TITLE></TITLE>
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.0  (Win32)">
 	<META NAME="CREATED" CONTENT="20090426;7275700">
-	<META NAME="CHANGED" CONTENT="20090601;23372100">
+	<META NAME="CHANGED" CONTENT="20090602;7294400">
 	<META NAME="Info 1" CONTENT="">
 	<META NAME="Info 2" CONTENT="">
 	<META NAME="Info 3" CONTENT="">
@@ -51,40 +51,41 @@ install to non default location use --libdir<BR>for example <BR><BR></SPAN></FON
 ./configure --libdir=/usr/local/lib/lua/5.1/</SPAN></FONT><FONT FACE="Times New Roman, serif">
 </FONT></FONT>
 </P>
-<P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><FONT FACE="Times New Roman, serif"><FONT SIZE=5><SPAN LANG="en-US">Installation
-on win32 from source</SPAN></FONT></FONT></FONT></P>
+<P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><FONT SIZE=5><SPAN LANG="en-US">Installation
+on win32 from source</SPAN></FONT></FONT></P>
 <UL>
 	<LI><P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">get
 	and install Lua for Windows from <A HREF="http://luaforwindows.luaforge.net/">http://luaforwindows.luaforge.net/</A></SPAN></FONT></FONT></P>
-	<LI><P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><FONT FACE="Times New Roman, serif">verify
-	that LUA_DEV environment variable is set - </FONT><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">on
-	my computer it is set to C:\Program Files\Lua\5.1\</SPAN></FONT></FONT></P>
-	<LI><P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">get
+	<LI><P ALIGN=LEFT><FONT FACE="Times New Roman, serif">verify that
+	LUA_DEV environment variable is set - <SPAN LANG="en-US">on my
+	computer it is set to C:\Program Files\Lua\5.1\</SPAN></FONT></P>
+	<LI><P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">get
 	and install free Microsoft Visual C++ 2008 Express Edition from
-	Microsoft</SPAN></FONT></FONT></P>
-	<LI><P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">copy
-	the product dll into the clibs directory of lua for windows.   on my
-	computer it is in C:\Program Files\Lua\5.1\clibs\</SPAN></FONT></FONT></P>
+	Microsoft</SPAN></FONT></P>
+	<LI><P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">copy
+	the product dll into the clibs directory of lua for windows. on my
+	computer it is in C:\Program Files\Lua\5.1\clibs\</SPAN></FONT></P>
 </UL>
 <P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">win32
 build uses stdint.h Copyright (c) 2006-2008 Alexander Chemeris. </SPAN></FONT>
 </P>
 <P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">Please
-see the copyright notice in ./win32/bitstring/bitstring/stdint.h</SPAN></FONT></P>
-<P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><FONT FACE="Times New Roman, serif"><FONT SIZE=5><SPAN LANG="en-US">Installation
-on win32 from prebuilt package</SPAN></FONT></FONT></FONT></P>
-<UL>
-	<LI><P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">copy
-	the bitstring.dll into the clibs directory of lua for windows.  on
-	my computer it is in C:\Program Files\Lua\5.1\clibs\</SPAN></FONT></FONT></P>
-</UL>
-<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">win32
-build uses stdint.h Copyright (c) 2006-2008 Alexander Chemeris.</SPAN></FONT></FONT></P>
-<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">Please
 see the copyright notice in
-./win32/bitstring/bitstring/stdint.h<BR><BR></SPAN></FONT><FONT FACE="Times New Roman, serif"><FONT SIZE=5><SPAN LANG="en-US">Library
-functions</SPAN></FONT></FONT><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US"><BR>Verify
-that bitstring is on LUA_CPATH and <BR><BR></SPAN></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">&gt;
+$BITSTRING_ROOT/win32/bitstring/bitstring/stdint.h</SPAN></FONT></P>
+<P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><FONT SIZE=5><SPAN LANG="en-US">Installation
+on win32 from prebuilt package</SPAN></FONT></FONT></P>
+<UL>
+	<LI><P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">copy
+	the bitstring.dll into the clibs directory of lua for windows. on my
+	computer it is in C:\Program Files\Lua\5.1\clibs\</SPAN></FONT></P>
+</UL>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">win32
+build uses stdint.h Copyright (c) 2006-2008 Alexander Chemeris.</SPAN></FONT></P>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><SPAN LANG="en-US">Please
+see the copyright notice in
+$BITSTRING_ROOT/win32/bitstring/bitstring/stdint.h<BR><BR></SPAN><FONT SIZE=5><SPAN LANG="en-US">Library
+functions</SPAN></FONT><SPAN LANG="en-US"><BR>Verify that bitstring
+is on LUA_CPATH and <BR><BR></SPAN><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">&gt;
 require </SPAN></FONT><FONT COLOR="#c5000b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">&quot;bitstring&quot;</SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US"><BR>&gt;
 result = bitstring.pack(</SPAN></FONT><FONT COLOR="#c5000b"><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">&quot;1:int,
 3:int, 5:int, 16:int:big&quot;</SPAN></FONT></FONT><FONT FACE="Courier New, monospace"><SPAN LANG="en-US">,
@@ -202,8 +203,22 @@ to Slava Chernoy for suggesting the compile feature and reminding me
 again when I didn't implement it.</SPAN></FONT></FONT></P>
 <P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=5><SPAN LANG="en-US">What's
 new</SPAN></FONT></FONT></P>
-<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US"><B>pre-alpha-0-1</B>
-</SPAN></FONT></FONT>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US"><B>beta-0-3
+</B><SPAN STYLE="font-weight: normal">2009-06-01</SPAN></SPAN></FONT></FONT></P>
+<UL>
+	<P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">port
+	to win32 platform</SPAN><B> </B></SPAN></FONT></FONT>
+	</P>
+</UL>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US"><B>alpha-0-2
+</B><SPAN STYLE="font-weight: normal">2009-05-11</SPAN></SPAN></FONT></FONT></P>
+<UL>
+	<LI><P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">basic
+	support for floating point numbers</SPAN><B> </B></SPAN></FONT></FONT>
+	</P>
+</UL>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US"><B>pre-alpha-0-1
+</B><SPAN STYLE="font-weight: normal">2009-05-04</SPAN><B> </B></SPAN></FONT></FONT>
 </P>
 <UL>
 	<LI><P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">substring
@@ -215,12 +230,8 @@ new</SPAN></FONT></FONT></P>
 	<LI><P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US">fixed
 	bugs</SPAN></FONT></FONT></P>
 </UL>
-<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US"><B>alpha-0-2</B></SPAN></FONT></FONT></P>
-<UL>
-	<LI><P ALIGN=LEFT><FONT FACE="Times New Roman, serif"><FONT SIZE=4><SPAN LANG="en-US"><SPAN STYLE="font-weight: normal">basic
-	support for floating point numbers</SPAN></SPAN></FONT> </FONT>
-	</P>
-</UL>
+<P ALIGN=LEFT STYLE="margin-left: 0.4cm"><BR><BR>
+</P>
 <P ALIGN=LEFT STYLE="margin-left: 0.4cm"><BR><BR>
 </P>
 </BODY>
